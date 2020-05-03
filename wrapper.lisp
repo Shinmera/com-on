@@ -27,7 +27,7 @@
                     (cffi:null-pointer) errno 0 string 256 (cffi:null-pointer))
     (wstring->string string)))
 
-(define-condition win32-error (gamepad:gamepad-error)
+(define-condition win32-error (error)
   ((function-name :initarg :function-name :initform NIL :reader function-name)
    (code :initarg :code :reader code)
    (message :initarg :message :initform NIL :reader message))
@@ -63,75 +63,97 @@
    :pointer pointer
    :unsigned-long))
 
-(defun make-guid (d1 d2 d3 &rest d4)
-  (let ((ptr (cffi:foreign-alloc '(:struct guid))))
-    (setf (guid-data1 ptr) d1)
-    (setf (guid-data2 ptr) d2)
-    (setf (guid-data3 ptr) d3)
-    (loop for i from 0 below 8
-          for d in d4
-          do (setf (cffi:mem-aref (cffi:foreign-slot-pointer ptr '(:struct guid) 'data4) :uint8 i)
-                   d))
-    ptr))
+(defclass guid ()
+  ((bytes :initform (make-array 16 :element-type '(unsigned-byte 8)) :reader bytes)))
+
+(defmethod initialize-instance :after ((guid guid) &key id)
+  (let ((dat (bytes guid)))
+    (etypecase id
+      (string
+       (let ((i 0))
+         (flet ((read-bytes (start end mode)
+                  (let ((int (parse-integer id :start start :end end :radix 16))
+                        (cnt (/ (- end start) 2)))
+                    (loop for j from 0 below cnt
+                          for byte = (ecase mode
+                                       (:lsb (ldb (byte 8 (* 8 j)) int))
+                                       (:msb (ldb (byte 8 (* 8 (- cnt j 1))) int)))
+                          do (setf (aref dat i) byte)
+                             (incf i)))))
+           (read-bytes 0 8 :lsb)
+           (read-bytes 9 13 :lsb)
+           (read-bytes 14 18 :lsb)
+           (read-bytes 19 23 :msb)
+           (read-bytes 24 36 :msb))))
+      (cons
+       (ecase (length id)
+         (16 (replace dat id))
+         (11 (destructuring-bind (d1 d2 d3 &rest d4) id
+               (setf (aref dat 0) (ldb (byte 8 0) d1))
+               (setf (aref dat 1) (ldb (byte 8 8) d1))
+               (setf (aref dat 2) (ldb (byte 8 16) d1))
+               (setf (aref dat 3) (ldb (byte 8 24) d1))
+               (setf (aref dat 4) (ldb (byte 8 0) d2))
+               (setf (aref dat 5) (ldb (byte 8 8) d2))
+               (setf (aref dat 6) (ldb (byte 8 0) d3))
+               (setf (aref dat 7) (ldb (byte 8 8) d3))
+               (loop for i from 8 below 16
+                     for byte in d4
+                     do (setf (aref dat i) byte))))))
+      (cffi:foreign-pointer
+       (loop with dat = dat
+             for i from 0 below 16
+             do (setf (aref dat i) (cffi:mem-aref id :uint8 i))))
+      (vector
+       (replace dat id))
+      (null
+       (fill dat 0)))))
+
+(defmethod print-object ((guid guid) stream)
+  (print-unreadable-object (guid stream :type T)
+    (write-sequence (guid-string guid) stream)))
 
 (defun guid-string (guid)
-  (let ((data4 (cffi:foreign-slot-pointer guid '(:struct guid) 'data4)))
-    (with-output-to-string (out)
-      (format out "~8,'0x-~4,'0x-~4,'0x-~2,'0x~2,'0x-"
-              (guid-data1 guid)
-              (guid-data2 guid)
-              (guid-data3 guid)
-              (cffi:mem-aref data4 :uint8 0)
-              (cffi:mem-aref data4 :uint8 1))
-      (dotimes (i 6)
-        (format out "~2,'0x" (cffi:mem-aref data4 :uint8 (+ 2 i)))))))
+  (with-output-to-string (out)
+    (let ((dat (bytes guid)))
+      (flet ((print-bytes (start end mode)
+               (ecase mode
+                 (:lsb (loop for i downfrom (1- end) to start
+                             do (format out "~2,'0x" (aref dat i))))
+                 (:msb (loop for i from start below end
+                             do (format out "~2,'0x" (aref dat i)))))))
+        (print-bytes 0 4 :lsb)
+        (write-char #\- out)
+        (print-bytes 4 6 :lsb)
+        (write-char #\- out)
+        (print-bytes 6 8 :lsb)
+        (write-char #\- out)
+        (print-bytes 8 10 :msb)
+        (write-char #\- out)
+        (print-bytes 10 16 :msb)))))
 
-(defun string-guid (string)
-  (make-guid (parse-integer string :start 0 :end 8 :radix 16)
-             (parse-integer string :start 9 :end 13 :radix 16)
-             (parse-integer string :start 14 :end 18 :radix 16)
-             (parse-integer string :start 19 :end 21 :radix 16)
-             (parse-integer string :start 21 :end 23 :radix 16)
-             (parse-integer string :start 24 :end 26 :radix 16)
-             (parse-integer string :start 26 :end 28 :radix 16)
-             (parse-integer string :start 28 :end 30 :radix 16)
-             (parse-integer string :start 30 :end 32 :radix 16)
-             (parse-integer string :start 32 :end 34 :radix 16)
-             (parse-integer string :start 34 :end 36 :radix 16)))
+(defmethod cffi:translate-to-foreign ((guid guid) (type (eql 'guid)))
+  (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))
 
-(defun guid-integer (guid)
-  (let ((integer 0)
-        (data4 (cffi:foreign-slot-pointer guid '(:struct guid) 'data4)))
-    (declare (optimize speed))
-    (declare (type (unsigned-byte 128) integer))
-    (setf (ldb (cl:byte 32 96) integer) (guid-data1 guid))
-    (setf (ldb (cl:byte 16 80) integer) (guid-data2 guid))
-    (setf (ldb (cl:byte 16 64) integer) (guid-data3 guid))
-    (dotimes (i 8)
-      (setf (ldb (cl:byte 8 (- 56 (* i 8))) integer) (cffi:mem-aref data4 :uint8 i)))
-    integer))
+(defmethod cffi:translate-from-foreign (ptr (type (eql 'guid)))
+  (make-instance 'guid :id ptr))
 
-(defun integer-guid (integer)
-  (make-guid (ldb (cl:byte 32 96) integer)
-             (ldb (cl:byte 16 80) integer)
-             (ldb (cl:byte 16 64) integer)
-             (ldb (cl:byte 8 56) integer)
-             (ldb (cl:byte 8 48) integer)
-             (ldb (cl:byte 8 40) integer)
-             (ldb (cl:byte 8 32) integer)
-             (ldb (cl:byte 8 24) integer)
-             (ldb (cl:byte 8 16) integer)
-             (ldb (cl:byte 8 8) integer)
-             (ldb (cl:byte 8 0) integer)))
+(defmethod cffi:free-translated-object (ptr (type (eql 'guid)) param)
+  (declare (ignore param))
+  (cffi:foreign-free ptr))
 
-(defmacro define-guid (name &rest guid)
-  ;; Lazy evaluation on first access to avoid problems with foreign memory
-  ;; allocation during/after dump to image.
+(defmethod cffi:translate-into-foreign-memory ((guid guid) (type (eql 'guid)) ptr)
+  (let ((dat (bytes guid)))
+    (dotimes (i 16 ptr)
+      (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
+
+(defun make-guid (&rest id)
+  (make-instance 'guid :id (if (cdr id) id (first id))))
+
+(defmacro define-guid (name &rest id)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (let (value)
-       (defun ,name ()
-         (or value (setf value (make-guid ,@guid))))
-       (define-symbol-macro ,name (,name)))))
+     (defconstant ,name (cond ((boundp ',name) (symbol-value ',name))
+                              (T (make-guid ,@id))))))
 
 (defmacro define-comfun ((struct method &rest options) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))
