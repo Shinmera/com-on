@@ -4,11 +4,15 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(in-package #:org.shirakumo.com-on)
+(in-package #:org.shirakumo.com-on.cffi)
 
 (cffi:define-foreign-library ole32
   (T (:default "Ole32")))
 
+(defconstant CP-UTF8 65001)
+(defconstant CLSCTX-ALL 23)
+(defconstant FORMAT-MESSAGE-FROM-SYSTEM 4096)
+(defconstant FORMAT-MESSAGE-IGNORE-INSERTS 512)
 (cffi:defctype dword :uint32)
 (cffi:defctype word :uint16)
 (cffi:defctype long :int32)
@@ -17,7 +21,7 @@
 (cffi:defctype wchar :uint16)
 (cffi:defctype uint-ptr #+64-bit :uint64 #-64-bit :uint32)
 
-(cffi:defcenum coinit
+(cffi:defcenum init
   (:multi-threaded #x0)
   (:apartment-threaded #x2)
   (:disable-ole1dde #x4)
@@ -38,22 +42,22 @@
   (:pointer #x80004003)
   (:unexpected #x8000ffff))
 
-(cffi:defcstruct (com :conc-name ||)
+(cffi:defcstruct (com :conc-name || :class com)
   (vtbl :pointer))
 
-(cffi:defcstruct (guid :conc-name guid-)
+(cffi:defcstruct (guid :conc-name guid- :class guid)
   (data1 dword)
   (data2 word)
   (data3 word)
   (data4 :uint8 :count 8))
 
-(cffi:defcfun (co-initialize "CoInitializeEx") hresult
+(cffi:defcfun (initialize "CoInitializeEx") hresult
   (nullable :pointer)
-  (init coinit))
+  (init init))
 
-(cffi:defcfun (co-uninitialize "CoUninitialize") :void)
+(cffi:defcfun (uninitialize "CoUninitialize") :void)
 
-(cffi:defcfun (co-create-instance "CoCreateInstance") hresult
+(cffi:defcfun (create-instance "CoCreateInstance") hresult
   (rclsid :pointer)
   (punkouter :pointer)
   (dwclscontext dword)

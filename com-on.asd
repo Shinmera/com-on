@@ -16,7 +16,9 @@
   :serial T
   :components ((:file "package")
                (:file "bindings")
-               (:file "wrapper")
+               (:file "error")
+               (:file "guid")
+               (:file "com")
                (:file "documentation"))
   :depends-on (:cffi
                :documentation-utils))

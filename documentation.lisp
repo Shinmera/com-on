@@ -6,3 +6,6 @@
 
 (in-package #:org.shirakumo.com-on)
 
+;;; bindings.lisp
+;;; guid.lisp
+(docs:define-docs)
