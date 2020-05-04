@@ -132,17 +132,17 @@
         (write-char #\- out)
         (print-bytes 10 16 :msb)))))
 
-(defmethod cffi:translate-to-foreign ((guid guid) (type (eql 'guid)))
+(defmethod cffi:translate-to-foreign ((guid guid) (type guid-tclass))
   (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))
 
-(defmethod cffi:translate-from-foreign (ptr (type (eql 'guid)))
+(defmethod cffi:translate-from-foreign (ptr (type guid-tclass))
   (make-instance 'guid :id ptr))
 
-(defmethod cffi:free-translated-object (ptr (type (eql 'guid)) param)
+(defmethod cffi:free-translated-object (ptr (type guid-tclass) param)
   (declare (ignore param))
   (cffi:foreign-free ptr))
 
-(defmethod cffi:translate-into-foreign-memory ((guid guid) (type (eql 'guid)) ptr)
+(defmethod cffi:translate-into-foreign-memory ((guid guid) (type guid-tclass) ptr)
   (let ((dat (bytes guid)))
     (dotimes (i 16 ptr)
       (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
