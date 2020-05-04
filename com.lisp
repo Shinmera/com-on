@@ -56,7 +56,7 @@
                ;; Default to hresult return
                do (when (consp return)
                     (push return args)
-                    (setf return 'hresult))
+                    (setf return 'com:hresult))
                collect `(define-comfun (,name ,method) ,return
                           ,@args)))))
 

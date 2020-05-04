@@ -67,10 +67,10 @@ In order to translate this and make it usable from Lisp, we would write the foll
 (com:define-guid IMM-DEVICE-ENUMERATOR "a95664d2-9614-4f35-a746-de8db63617e6")
 (com:define-guid MM-DEVICE-ENUMERATOR "bcde0395-e52f-467c-8e3d-c4579291692e")
 
-...
+;; ...
 
 (com:define-comstruct device-enumerator
-  (enum-audio-endpoints (data-flow e-data-flow) (state-mask com:dword) (devices :pointer))
+  (enum-audio-endpoints (data-flow e-data-flow) (state-mask :uint32) (devices :pointer))
   (get-default-audio-endpoint (data-flow data-flow) (role role) (endpoint :pointer))
   (register-endpoint-notification-callback (client :pointer))
   (unregister-endpoint-notification-callback (client :pointer)))
@@ -87,7 +87,7 @@ In order to actually instantiate this interface now, we can use ``create``:
 If successful, this will return a pointer to the COM instance, on which you can now call methods:
 
 :: common lisp
-(device-enumerator-enum-audio-endpoints * ...)
+(device-enumerator-enum-audio-endpoints * #| ... |#)
 ::
 
 Often you will want to wrap these method calls in a ``check-hresult`` to catch failure states and translate them into Lisp conditions.

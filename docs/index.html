@@ -1,0 +1,345 @@
+<!DOCTYPE html> <html lang="EN"> <head> <meta charset="utf-8"> <title>Com On</title> <style>html body{margin:0 auto 0 auto;padding:20px;max-width:1024px;font-family:sans-serif;font-size:14pt;overflow-y:scroll;}html body a{text-decoration:none;}html body a[href]{color:#0055AA;}html body a[href]:hover{color:#0088EE;}html body pre{background:#FAFAFA;border:1px solid #DDDDDD;padding:0.75em;overflow-x:auto;}html body pre >code a[href]{color:#223388;}article.project h1{font-size:1.7em;}article.project h1,article.project h2,article.project h3,article.project h4,article.project h5,article.project h6{margin:0.2em 0 0.1em 0;text-indent:1em;}article.project >header{text-align:center;}article.project >header img.logo{display:block;margin:auto;max-height:170px;}article.project >header h1{display:inline-block;text-indent:0;font-size:2.5em;}article.project >header .version{vertical-align:bottom;}article.project >header .languages{margin-top:-0.5em;text-transform:capitalize;}article.project >header .description{margin:0;}article.project >header .pages{margin-top:0.5em;font-size:1.2em;text-transform:capitalize;}article.project >header .pages a{display:inline-block;padding:0 0.2em;}article.project >section{margin:1em 0 1em 0;}article.project #index >ul{list-style:none;margin:0;padding:0;}article.project .row label{display:inline-block;min-width:8em;}article.project #system .row{display:flex;}article.project #system #dependencies{display:inline;margin:0;padding:0;}article.project #system #dependencies li{display:inline;padding:0 0.2em;}article.definition{margin:1em 0 0 0;}article.definition >header h1,article.definition >header h2,article.definition >header h3,article.definition >header h4,article.definition >header h5,article.definition >header h6{text-indent:0;display:inline-block;}article.definition >header ul{display:inline-block;list-style:none;margin:0;padding:0;}article.definition >header ul li{display:inline-block;padding:0 0.2em 0 0;}article.definition >header .visibility{display:none;}article.definition >header .visibility,article.definition >header .type{text-transform:lowercase;}article.definition >header .source-link{visibility:hidden;float:right;}article.definition >header .source-link:after{visibility:visible;content:"[SRC]";}article.definition .docstring{margin:0 0 0 1em;}article.definition .docstring pre{font-size:0.8em;white-space:pre-wrap;}.definition.package >header ul.nicknames{display:inline-block;list-style:none;margin:0;padding:0 0 0 1em;}.definition.package >header ul.nicknames li{display:inline;}.definition.package >header ul.nicknames:before{content:"(";}.definition.package >header ul.nicknames:after{content:")";}.definition.package ul.definitions{margin:0;list-style:none;padding:0 0 0 0.5em;}.definition.callable >header .name:before,.definition.type >header .name:before{content:"(";font-weight:normal;}.definition.callable >header .arguments:after,.definition.type >header .arguments:after{content:")";}.definition.callable >header .arguments .arguments:before,.definition.type >header .arguments .arguments:before{content:"(";}.definition.callable >header .arguments .argument,.definition.type >header .arguments .argument{padding:0;}.definition.callable >header .arguments .argument.lambda-list-keyword,.definition.type >header .arguments .argument.lambda-list-keyword{color:#991155;}.definition li>mark{background:none;border-left:0.3em solid #0088EE;padding-left:0.3em;display:block;} </style> </head> <body> <article class="project"> <header>  <h1>com on</h1>  <span class="version">1.0.0</span>  <nav class="languages">  </nav>  <p class="description">Utilities for dealing with COM interfaces.</p>  <nav class="pages">  </nav> </header> <section id="documentation"><article><h2 id="About com-on">About com-on</h2><p>This is a small library to help work with COM interfaces under Windows. Specifically it handles initialising COM, creating and managing COM instances, GUIDs, and defining the necessary wrappers to access COM methods from Lisp.</p><h2 id="How To">How To</h2><p>For the duration of this tutorial we will assume that the package <code>org.shirakumo.com-on</code> has the local nickname <code><a href="#PACKAGE%20ORG.SHIRAKUMO.COM-ON" class="xref">com</a></code>.</p><p>For our purposes, let's suppose we want to bind the <a class="external-link" href="https://docs.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdeviceenumerator">IMMDeviceEnumerator</a> interface. We can look at the underlying definition in C by looking at the <a class="external-link" href="https://github.com/Alexpux/mingw-w64/blob/master/mingw-w64-headers/include/mmdeviceapi.h#L649">mingw headers</a>:</p><code style="display:block" class="code-block" data-language="C"><pre>MIDL_INTERFACE(&quot;a95664d2-9614-4f35-a746-de8db63617e6&quot;)
+IMMDeviceEnumerator : public IUnknown
+
+...
+
+typedef struct IMMDeviceEnumeratorVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        IMMDeviceEnumerator* This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        IMMDeviceEnumerator* This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        IMMDeviceEnumerator* This);
+
+    /*** IMMDeviceEnumerator methods ***/
+    HRESULT (STDMETHODCALLTYPE *EnumAudioEndpoints)(
+        IMMDeviceEnumerator* This,
+        EDataFlow dataFlow,
+        DWORD dwStateMask,
+        IMMDeviceCollection **ppDevices);
+
+    HRESULT (STDMETHODCALLTYPE *GetDefaultAudioEndpoint)(
+        IMMDeviceEnumerator* This,
+        EDataFlow dataFlow,
+        ERole role,
+        IMMDevice **ppEndpoint);
+
+    HRESULT (STDMETHODCALLTYPE *GetDevice)(
+        IMMDeviceEnumerator* This,
+        LPCWSTR pwstrId,
+        IMMDevice **ppDevice);
+
+    HRESULT (STDMETHODCALLTYPE *RegisterEndpointNotificationCallback)(
+        IMMDeviceEnumerator* This,
+        IMMNotificationClient *pClient);
+
+    HRESULT (STDMETHODCALLTYPE *UnregisterEndpointNotificationCallback)(
+        IMMDeviceEnumerator* This,
+        IMMNotificationClient *pClient);
+
+    END_INTERFACE
+} IMMDeviceEnumeratorVtbl;
+
+...
+
+class DECLSPEC_UUID(&quot;bcde0395-e52f-467c-8e3d-c4579291692e&quot;) MMDeviceEnumerator;</pre></code><p>In order to translate this and make it usable from Lisp, we would write the following:</p><code style="display:block" class="code-block" data-language="common lisp"><pre>(<a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-GUID" class="xref">com:define-guid</a> IMM-DEVICE-ENUMERATOR &quot;a95664d2-9614-4f35-a746-de8db63617e6&quot;)
+(<a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-GUID" class="xref">com:define-guid</a> MM-DEVICE-ENUMERATOR &quot;bcde0395-e52f-467c-8e3d-c4579291692e&quot;)
+
+;; ...
+
+(<a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMSTRUCT" class="xref">com:define-comstruct</a> device-enumerator
+  (enum-audio-endpoints (data-flow e-data-flow) (state-mask :uint32) (devices :pointer))
+  (get-default-audio-endpoint (data-flow data-flow) (role role) (endpoint :pointer))
+  (register-endpoint-notification-callback (client :pointer))
+  (unregister-endpoint-notification-callback (client :pointer)))</pre></code><p>Omitted from this are the declarations of the enums <code>data-flow</code> and <code>role</code>, which can be translated as usual for C. Note that we can give our struct, methods, and arguments any name we like. What's important is that the order of the methods is exactly the same as in C, and that we do not skip any methods. The methods inherited from <code>IUnknown</code> are always automatically added by <code><a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMSTRUCT" class="xref">define-comstruct</a></code> and can thus be omitted. Similar for the <code>this</code> pointer which is always the first argument. Finally, almost all methods return an <code>hresult</code>, so the return type can be omitted from <code><a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMSTRUCT" class="xref">define-comstruct</a></code> as well.</p><p>In order to actually instantiate this interface now, we can use <code><a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACREATE" class="xref">create</a></code>:</p><code style="display:block" class="code-block" data-language="common lisp"><pre>(<a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACREATE" class="xref">com:create</a> MM-DEVICE-ENUMERATOR IMM-DEVICE-ENUMERATOR)</pre></code><p>If successful, this will return a pointer to the COM instance, on which you can now call methods:</p><code style="display:block" class="code-block" data-language="common lisp"><pre>(device-enumerator-enum-audio-endpoints <a href="http://l1sp.org/cl/%2A" class="xref">*</a> #| ... |#)</pre></code><p>Often you will want to wrap these method calls in a <code><a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACHECK-HRESULT" class="xref">check-hresult</a></code> to catch failure states and translate them into Lisp conditions.</p><p>When you are done with a COM instance, you must <code><a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ARELEASE" class="xref">release</a></code> it in order to free the resource. After <code><a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ARELEASE" class="xref">release</a></code> ing the instance you may not call any methods on it, or pass it anywhere else. You also must not <code><a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ARELEASE" class="xref">release</a></code> it twice.</p><p>If you do not create the COM instance yourself, but rather get it through another API call, you must first call <code><a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AINIT" class="xref">init</a></code> to ensure the COM interface is properly initialised. Similarly, once you are done with COM, you should call <code><a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ASHUTDOWN" class="xref">shutdown</a></code> to uninitialise it.</p></article></section>   <section id="system"> <h2>System Information</h2>  <div class="row"> <label for="version">Version:</label> <a id="version">1.0.0</a> </div>   <div class="row"> <label for="dependencies">Dependencies:</label> <ul id="dependencies"><li><a class="external">cffi</a></li><li><a class="external" href="https://Shinmera.github.io/documentation-utils/">documentation-utils</a></li></ul> </div>   <div class="row"> <label for="author">Author:</label> <a id="author" href="mailto:shinmera@tymoon.eu">Nicolas Hafner</a> </div>   <div class="row"> <label for="license">License:</label> <a id="license" href="https://github.com/shinmera/com-on/blob/master/LICENSE">zlib</a> </div>   <div class="row"> <label for="homepage">Homepage:</label> <a id="homepage" href="https://shinmera.github.io/com-on/">https://shinmera.github.io/com-on/</a> </div>   <div class="row"> <label for="sources">Sources:</label> <a id="sources" href="https://github.com/shinmera/com-on.git">https://github.com/shinmera/com-on.git</a> </div>  </section>    <section id="index"> <h2>Definition Index</h2> <ul> <li> <article class="definition package" id="PACKAGE ORG.SHIRAKUMO.COM-ON"> <header> <h3> <a href="#PACKAGE%20ORG.SHIRAKUMO.COM-ON">ORG.SHIRAKUMO.COM-ON</a> </h3> <ul class="nicknames"></ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> <ul class="definitions"> <li> <article class="definition class" id="CLASS ORG.SHIRAKUMO.COM-ON:GUID"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CLASS</span> <h4 class="name"> <a href="#CLASS%20ORG.SHIRAKUMO.COM-ON%3AGUID">GUID</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/guid.lisp#L9">Source</a>  </header> <div class="docstring"><pre>Encapsulation for a Windows GUID.
+
+GUIDs are 16 byte identifiers that are used for COM classes and COM
+instances.
+
+The :ID initarg determines the GUID's contents. See MAKE-GUID.
+
+A GUID instance may be passed as an argument to a C function where the
+argument expects a COM:GUID structure pointer.
+
+A GUID instance is usable as a literal and may be dumped to a FASL.
+
+See COM:GUID
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ABYTES" class="xref">BYTES</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID-STRING" class="xref">GUID-STRING</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID (function)</a>
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-GUID" class="xref">DEFINE-GUID</a></pre></div> </article> </li>  <li> <article class="definition condition" id="CONDITION ORG.SHIRAKUMO.COM-ON:WIN32-ERROR"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CONDITION</span> <h4 class="name"> <a href="#CONDITION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR">WIN32-ERROR</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L28">Source</a>  </header> <div class="docstring"><pre>Condition type for errors coming from the Windows API.
+
+This condition type is signalled whenever a Windows API call returns
+unsuccessfully.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR (function)</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AFUNCTION-NAME" class="xref">FUNCTION-NAME</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACODE" class="xref">CODE</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AMESSAGE" class="xref">MESSAGE</a>
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACHECK-LAST-ERROR" class="xref">CHECK-LAST-ERROR</a>
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACHECK-HRESULT" class="xref">CHECK-HRESULT</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:CREATE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACREATE">CREATE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">CLASS</li>    <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L11">Source</a>  </header> <div class="docstring"><pre>Create an instance of a COM class.
+
+CLASS should be the GUID of the COM class. Typically named something
+like CLSID_...
+
+INSTANCE should be the GUID of the COM instance to access. Typically
+named something like IID_...
+
+Returns the pointer to the COM instance if successful, or signals an
+error otherwise. You must release this instance when you are done with
+it by calling RELEASE.
+
+Automatically calls INIT.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ARELEASE" class="xref">RELEASE</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AINIT" class="xref">INIT</a>
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWITH-COM" class="xref">WITH-COM</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:ERROR-MESSAGE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AERROR-MESSAGE">ERROR-MESSAGE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument lambda-list-keyword">&amp;OPTIONAL</li>    <li class="argument">ERRNO</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L22">Source</a>  </header> <div class="docstring"><pre>Returns the error messag string for the given error code.
+
+Unless specifically supplied, the last caused error code is used.
+
+See COM:GET-LAST-ERROR</pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:GUID"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID">GUID</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument lambda-list-keyword">&amp;REST</li>    <li class="argument">ID</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/guid.lisp#L97">Source</a>  </header> <div class="docstring"><pre>Create a new GUID instance.
+
+ID may either be multiple values, or a single value determining the
+GUID's actual ID values. The following ID types are allowed:
+
+  STRING                --- Parses the string representation of the
+                            UUID into its appropriate octets. Such a
+                            UUID is typically of the form
+                              XXXX-XX-XX-XX-XXXXXX
+  LIST (16)             --- Uses the 16 octets in the list to build
+                            the internal octet vector.
+  LIST (11)             --- Uses the 11 integers in the list to build
+                            the octet vector. Specifically, the list
+                            should contain integers of the following
+                            bit sizes:
+                              32 16 16 8 8 8 8 8 8 8 8
+                            This representation is sometimes found in
+                            C headers.
+  CFFI:FOREIGN-POINTER  --- Copies the contents from the supplied C
+                            pointer to a GUID into the internal byte
+                            vector.
+  VECTOR (16)           --- Uses the 16 octets in the vector to build
+                            the internal octet vector.
+  NULL                  --- Fills the internal octet vector with 0s.
+
+Supplying any integer anywhere in these values outside of the
+specified ranges is an error.
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID (type)</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:GUID-STRING"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID-STRING">GUID-STRING</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">GUID</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/guid.lisp#L63">Source</a>  </header> <div class="docstring"><pre>Returns a standard string representation of the GUID.
+
+The bytes of the GUID are represented in hex format as follows:
+
+ 3 2 1 0 - 5 4 - 7 6 - 8 9 - 10 11 12 13 14 15
+
+The reordering is due to the little-endian internal representation of
+the octets.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:INIT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AINIT">INIT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L63">Source</a>  </header> <div class="docstring"><pre>Initialises the COM system if it has not yet been initialised.
+
+This will load OLE32 and initialise COM for a multi-threaded
+application.
+
+This function must be called before any COM operations are performed.
+
+Calling this function multiple times is safe.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ASHUTDOWN" class="xref">SHUTDOWN</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:RELEASE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ARELEASE">RELEASE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">POINTER</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L16">Source</a>  </header> <div class="docstring"><pre>Release a COM instance.
+
+After releasing a COM instance, you /must not/ access it again, as it
+may have been deallocated or invalidated.
+
+You may get a COM instance through CREATE or some other API function
+that returns an instance.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACREATE" class="xref">CREATE</a>
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWITH-COM" class="xref">WITH-COM</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:SHUTDOWN"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ASHUTDOWN">SHUTDOWN</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L70">Source</a>  </header> <div class="docstring"><pre>Uninitialises the COM system if it has been initialised.
+
+After this you may not perform any further COM operations.
+
+Calling this function multiple times is safe.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AINIT" class="xref">INIT</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:STRING-&gt;WSTRING"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ASTRING-%3EWSTRING">STRING-&gt;WSTRING</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">STRING</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L15">Source</a>  </header> <div class="docstring"><pre>Converts a Lisp string to a Windows 'wchar' string and returns the pointer to this freshly allocated string.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWSTRING-%3ESTRING" class="xref">WSTRING-&gt;STRING</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:WIN32-ERROR"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR">WIN32-ERROR</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">CODE</li>    <li class="argument lambda-list-keyword">&amp;KEY</li>    <li class="argument">FUNCTION-NAME</li>    <li class="argument">MESSAGE</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L36">Source</a>  </header> <div class="docstring"><pre>Signals an error of type WIN32-ERROR
+
+Requires the Windows error code.
+If no explicit MESSAGE is passed, the message is determined by
+ERROR-MESSAGE.
+
+See <a href="#CONDITION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR (type)</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AERROR-MESSAGE" class="xref">ERROR-MESSAGE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.COM-ON:WSTRING-&gt;STRING"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWSTRING-%3ESTRING">WSTRING-&gt;STRING</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">POINTER</li>    <li class="argument lambda-list-keyword">&amp;OPTIONAL</li>    <li class="argument">CHARS</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L9">Source</a>  </header> <div class="docstring"><pre>Converts a Windows 'wchar' string to a Lisp string and returns it.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ASTRING-%3EWSTRING" class="xref">STRING-&gt;WSTRING</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.COM-ON:BYTES"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ABYTES">BYTES</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>  </ul>  </header> <div class="docstring"><pre>Returns a 16-octet vector describing the GUID.
+
+Note that the vector elements are in the order expected in the
+memory representation of the GUID, which may not be entirely
+intuitive.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.COM-ON:CODE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACODE">CODE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">CONDITION</li>  </ul>  </header> <div class="docstring"><pre>Returns the windows error code associated with the problem.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.COM-ON:FUNCTION-NAME"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AFUNCTION-NAME">FUNCTION-NAME</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">CONDITION</li>  </ul>  </header> <div class="docstring"><pre>Returns the function name that caused the error, if known.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.COM-ON:MESSAGE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AMESSAGE">MESSAGE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">CONDITION</li>  </ul>  </header> <div class="docstring"><pre>Returns a descriptive message about the error.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:CHECK-HRESULT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACHECK-HRESULT">CHECK-HRESULT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE-FORM</li>    <li class="argument lambda-list-keyword">&amp;REST</li>    <li class="argument">EXPECTED</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L50">Source</a>  </header> <div class="docstring"><pre>Convenience function to check the returned HRESULT and error on failure.
+
+If the return value of VALUE-FORM is not one of the supplied EXPECTED
+values, an error of type WIN32-ERROR is returned. If it is one of the
+EXPECTED values, the value is returned.
+
+If EXPECTED is not passed, it is assumed to be just (:OK).
+
+See COM:HRESULT
+See <a href="#CONDITION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR (type)</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:CHECK-LAST-ERROR"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACHECK-LAST-ERROR">CHECK-LAST-ERROR</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">PREDICATE</li>    <li class="argument lambda-list-keyword">&amp;BODY</li>    <li class="argument">CLEANUP</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L44">Source</a>  </header> <div class="docstring"><pre>Convenience function to check the last error on failure.
+
+If PREDICATE returns NIL, CLEANUP forms are run. After this, the error
+code is retrieved through COM:GET-LAST-ERROR, and a WIN32-ERROR is
+signalled using this code.
+
+See <a href="#CONDITION%20ORG.SHIRAKUMO.COM-ON%3AWIN32-ERROR" class="xref">WIN32-ERROR (type)</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:DEFINE-COMFUN"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMFUN">DEFINE-COMFUN</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <ul class="arguments"> <li class="argument">STRUCT</li>  <li class="argument">METHOD</li>  <li class="argument lambda-list-keyword">&amp;REST</li>  <li class="argument">OPTIONS</li> </ul>    <li class="argument">RETURN-TYPE</li>    <li class="argument lambda-list-keyword">&amp;BODY</li>    <li class="argument">ARGS</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L29">Source</a>  </header> <div class="docstring"><pre>Define a method on a COM interface.
+
+ARGS should be a list of argument declarations, with each argument
+being composed of an argument name and a CFFI type.
+
+This will create a function with the name of STRUCT-METHOD with the
+declared arguments, which will attempt to call the related COM method
+on the supplied COM instance. This method must be accessible through a
+function called %STRUCT-METHOD to which a pointer to a VTBL can be
+passed.
+
+You will typically not use this macro by itself, and instead use
+DEFINE-COMSTRUCT to perform the definition of a COM interface.
+
+See COM:VTBL
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMSTRUCT" class="xref">DEFINE-COMSTRUCT</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:DEFINE-COMSTRUCT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMSTRUCT">DEFINE-COMSTRUCT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NAME</li>    <li class="argument lambda-list-keyword">&amp;BODY</li>    <li class="argument">METHODS</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L45">Source</a>  </header> <div class="docstring"><pre>Define a COM interface structure.
+
+NAME should be the name of the CFFI structure type as well as the
+standard prefix for all structure interface methods. You may choose
+this arbitrarily and there is no binding to any C functions or
+structures.
+
+METHODS should be a body of the following kinds of entries:
+
+  METHODS      ::= (method [return-value] ARGUMENT*)*
+  ARGUMENT     ::= (name type)
+  method       --- Name of the interface method. You may pick this to
+                   be whatever you like, there is no strict binding to
+                   any C function.
+  return-value --- The return value of the method. If not passed
+                   explicitly, HRESULT is assumed.
+  name         --- The name of the argumetn. Again, the name may be
+                   arbitrarily chosen.
+  type         --- The CFFI type that the argument should be of.
+
+Note that the order of the methods /must/ be the same as in the actual
+C header you're mimicking. You also /must/ include all of the methods
+defined in the C header and cannot skip any. The order is what
+actually defines which method is used. The name is purely on the Lisp
+side.
+
+Each COM interface always has the following three methods at the
+beginning, which DEFINE-COMSTRUCT adds for you automatically:
+
+  (QUERY-INTERFACE HRESULT (UID :POINTER) (OUT :POINTER))
+  (ADD-REF :ULONG)
+  (RELEASE :ULONG)
+
+Also note that the THIS argument is always assumed for every method
+and should therefore be omitted from the declarations.
+
+For each method defined in the body, A DEFINE-COMFUN is generated,
+which in turn will generate a function of the name NAME-METHOD using
+the declared arguments and return type.
+
+Alongside the methods, a C structure is defined which constitutes the
+VTBL layout of the COM interface. Note that it does /not/ define the
+COM instance layout itself. Each COM instance is assumed to merely be
+a pointer to a structure with a pointer to a VTBL. None of this should
+concern you terribly much, however. All you need to know is that you
+can just pass a COM instance pointer to the method functions defined
+by DEFINE-COMSTRUCT.
+
+See <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-COMFUN" class="xref">DEFINE-COMFUN</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:DEFINE-GUID"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ADEFINE-GUID">DEFINE-GUID</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NAME</li>    <li class="argument lambda-list-keyword">&amp;REST</li>    <li class="argument">ID</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/guid.lisp#L100">Source</a>  </header> <div class="docstring"><pre>Define a GUID instance.
+
+This is a shorthand for DEFCONSTANT of a GUID instance created from
+the given ID argument.
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID (type)</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AGUID" class="xref">GUID (function)</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:WITH-COM"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWITH-COM">WITH-COM</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <ul class="arguments"> <li class="argument">VAR</li>  <li class="argument">INIT</li> </ul>    <li class="argument lambda-list-keyword">&amp;BODY</li>    <li class="argument">BODY</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/com.lisp#L23">Source</a>  </header> <div class="docstring"><pre>Hold a COM instance for the duration of the body.
+
+This will ensure RELEASE is called on the instance when the body is
+exited by any means.
+
+INIT may be any form that returns a pointer to a COM instance.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ACREATE" class="xref">CREATE</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.COM-ON%3ARELEASE" class="xref">RELEASE</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.COM-ON:WITH-DEREF"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.COM-ON%3AWITH-DEREF">WITH-DEREF</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <ul class="arguments"> <li class="argument">VAR</li>  <li class="argument">TYPE</li> </ul>    <li class="argument lambda-list-keyword">&amp;BODY</li>    <li class="argument">INIT</li>  </ul>  <a class="source-link" href="https://github.com/shinmera/com-on/blob/master/error.lisp#L57">Source</a>  </header> <div class="docstring"><pre>Shorthand to initialise a value by dereferencing.
+
+Binds VAR to a pointer to a memory region of size fitting for TYPE,
+then evaluates INIT. INIT should return a COM:HRESULT. If this result
+is not :OK, an error is signalled. Otherwise, the memory region bound
+to VAR is dereferenced as a value of TYPE, which is then returned.
+
+Seee CHECK-HRESULT</pre></div> </article> </li> </ul> </article> </li> </ul> </section>  </article> <script>window.addEventListener("DOMContentLoaded", function(){
+    var unmarkElement = function(el){
+        if(el.tagName === "mark" || el.tagName === "MARK"){
+            [].forEach.call(el.childNodes, function(child){
+                el.parentNode.insertBefore(child, el);
+            });
+            el.parentNode.removeChild(el);
+        }else if(el.parentNode.tagName === "mark"){
+            return unmarkElement(el.parentNode);
+        }
+        return null;
+    }
+
+    var unmarkAll = function(root){
+        root = root || document;
+        [].forEach.call(root.querySelectorAll("mark"), unmarkElement);
+    }
+    
+    var markElement = function(el){
+        if(el.parentNode.tagName === "mark" || el.parentNode.tagName === "MARK"){
+            return el.parentNode;
+        } else {
+            unmarkAll();
+            var marked = document.createElement("mark");
+            el.parentNode.insertBefore(marked, el);
+            marked.appendChild(el);
+            return marked;
+        }
+    }
+
+    var markFragmented = function(){
+        if(window.location.hash){
+            var el = document.getElementById(decodeURIComponent(window.location.hash.substr(1)));
+            if(el) markElement(el);
+        }
+    }
+
+    var registerXrefLink = function(link){
+        var el = document.getElementById(decodeURIComponent(link.getAttribute("href").substr(1)));
+        if(el){
+            link.addEventListener("click", function(){
+                markElement(el);
+            });
+        }
+    }
+
+    var registerXrefLinks = function(root){
+        root = root || document;
+        [].forEach.call(root.querySelectorAll("a.xref"), registerXrefLink);
+    }
+
+    markFragmented();
+    registerXrefLinks();
+}); </script> </body> </html> 
