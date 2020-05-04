@@ -6,6 +6,7 @@
 
 (defpackage #:org.shirakumo.com-on.cffi
   (:use #:cl)
+  (:shadow #:byte)
   (:export
    #:ole32
    #:cp-utf8

@@ -19,8 +19,8 @@
       (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 pointer chars)
       pointer)))
 
-(defun error-message (&optional (errno (get-last-error)))
-  (cffi:with-foreign-object (string 'wchar 256)
+(defun error-message (&optional (errno (com:get-last-error)))
+  (cffi:with-foreign-object (string 'com:wchar 256)
     (com:format-message (logior com:FORMAT-MESSAGE-FROM-SYSTEM com:FORMAT-MESSAGE-IGNORE-INSERTS)
                         (cffi:null-pointer) errno 0 string 256 (cffi:null-pointer))
     (wstring->string string)))
