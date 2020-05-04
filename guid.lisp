@@ -54,7 +54,11 @@
 
 (defmethod print-object ((guid guid) stream)
   (print-unreadable-object (guid stream :type T)
-    (write-sequence (guid-string guid) stream)))
+    (format stream "(~s ~s)" 'guid (guid-string guid))))
+
+(defmethod make-load-form ((guid guid) &optional env)
+  (declare (ignore env))
+  `(guid ,(bytes guid)))
 
 (defun guid-string (guid)
   (with-output-to-string (out)
@@ -90,7 +94,7 @@
     (dotimes (i 16 ptr)
       (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
 
-(defun make-guid (&rest id)
+(defun guid (&rest id)
   (make-instance 'guid :id (if (cdr id) id (first id))))
 
 (defmacro define-guid (name &rest id)

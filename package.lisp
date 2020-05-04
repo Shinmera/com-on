@@ -45,6 +45,7 @@
   (:export
    #:create
    #:release
+   #:with-com
    #:define-comfun
    #:define-comstruct
    #:init
@@ -66,5 +67,5 @@
    #:guid
    #:bytes
    #:guid-string
-   #:make-guid
+   #:guid
    #:define-guid))

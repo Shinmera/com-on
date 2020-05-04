@@ -9,6 +9,7 @@
 (defvar *initialized* NIL)
 
 (defun create (class instance)
+  (init)
   (with-deref (com :pointer)
     (com:create-instance class (cffi:null-pointer) com:CLSCTX-ALL instance com)))
 
@@ -18,6 +19,12 @@
    ()
    :pointer pointer
    :unsigned-long))
+
+(defmacro with-com ((var init) &body body)
+  `(let ((,var ,init))
+     (unwind-protect
+          (progn ,@body)
+       (release ,var))))
 
 (defmacro define-comfun ((struct method &rest options) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))
