@@ -104,6 +104,9 @@ beginning, which DEFINE-COMSTRUCT adds for you automatically:
   (ADD-REF :ULONG)
   (RELEASE :ULONG)
 
+Also note that the THIS argument is always assumed for every method
+and should therefore be omitted from the declarations.
+
 For each method defined in the body, A DEFINE-COMFUN is generated,
 which in turn will generate a function of the name NAME-METHOD using
 the declared arguments and return type.

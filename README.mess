@@ -1,2 +1,98 @@
 ## About com-on
-Don't look, aaaaaaaaaaaaaaa
+This is a small library to help work with COM interfaces under Windows. Specifically it handles initialising COM, creating and managing COM instances, GUIDs, and defining the necessary wrappers to access COM methods from Lisp.
+
+## How To
+For the duration of this tutorial we will assume that the package ``org.shirakumo.com-on`` has the local nickname ``com``.
+
+For our purposes, let's suppose we want to bind the "IMMDeviceEnumerator"(https://docs.microsoft.com/en-us/windows/win32/api/mmdeviceapi/nn-mmdeviceapi-immdeviceenumerator) interface. We can look at the underlying definition in C by looking at the "mingw headers"(https://github.com/Alexpux/mingw-w64/blob/master/mingw-w64-headers/include/mmdeviceapi.h#L649):
+
+:: C
+MIDL_INTERFACE("a95664d2-9614-4f35-a746-de8db63617e6")
+IMMDeviceEnumerator : public IUnknown
+
+...
+
+typedef struct IMMDeviceEnumeratorVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        IMMDeviceEnumerator* This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        IMMDeviceEnumerator* This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        IMMDeviceEnumerator* This);
+
+    /*** IMMDeviceEnumerator methods ***/
+    HRESULT (STDMETHODCALLTYPE *EnumAudioEndpoints)(
+        IMMDeviceEnumerator* This,
+        EDataFlow dataFlow,
+        DWORD dwStateMask,
+        IMMDeviceCollection **ppDevices);
+
+    HRESULT (STDMETHODCALLTYPE *GetDefaultAudioEndpoint)(
+        IMMDeviceEnumerator* This,
+        EDataFlow dataFlow,
+        ERole role,
+        IMMDevice **ppEndpoint);
+
+    HRESULT (STDMETHODCALLTYPE *GetDevice)(
+        IMMDeviceEnumerator* This,
+        LPCWSTR pwstrId,
+        IMMDevice **ppDevice);
+
+    HRESULT (STDMETHODCALLTYPE *RegisterEndpointNotificationCallback)(
+        IMMDeviceEnumerator* This,
+        IMMNotificationClient *pClient);
+
+    HRESULT (STDMETHODCALLTYPE *UnregisterEndpointNotificationCallback)(
+        IMMDeviceEnumerator* This,
+        IMMNotificationClient *pClient);
+
+    END_INTERFACE
+} IMMDeviceEnumeratorVtbl;
+
+...
+
+class DECLSPEC_UUID("bcde0395-e52f-467c-8e3d-c4579291692e") MMDeviceEnumerator;
+::
+
+In order to translate this and make it usable from Lisp, we would write the following:
+
+:: common lisp
+(com:define-guid IMM-DEVICE-ENUMERATOR "a95664d2-9614-4f35-a746-de8db63617e6")
+(com:define-guid MM-DEVICE-ENUMERATOR "bcde0395-e52f-467c-8e3d-c4579291692e")
+
+...
+
+(com:define-comstruct device-enumerator
+  (enum-audio-endpoints (data-flow e-data-flow) (state-mask com:dword) (devices :pointer))
+  (get-default-audio-endpoint (data-flow data-flow) (role role) (endpoint :pointer))
+  (register-endpoint-notification-callback (client :pointer))
+  (unregister-endpoint-notification-callback (client :pointer)))
+::
+
+Omitted from this are the declarations of the enums ``data-flow`` and ``role``, which can be translated as usual for C. Note that we can give our struct, methods, and arguments any name we like. What's important is that the order of the methods is exactly the same as in C, and that we do not skip any methods. The methods inherited from ``IUnknown`` are always automatically added by ``define-comstruct`` and can thus be omitted. Similar for the ``this`` pointer which is always the first argument. Finally, almost all methods return an ``hresult``, so the return type can be omitted from ``define-comstruct`` as well.
+
+In order to actually instantiate this interface now, we can use ``create``:
+
+:: common lisp
+(com:create MM-DEVICE-ENUMERATOR IMM-DEVICE-ENUMERATOR)
+::
+
+If successful, this will return a pointer to the COM instance, on which you can now call methods:
+
+:: common lisp
+(device-enumerator-enum-audio-endpoints * ...)
+::
+
+Often you will want to wrap these method calls in a ``check-hresult`` to catch failure states and translate them into Lisp conditions.
+
+When you are done with a COM instance, you must ``release`` it in order to free the resource. After ``release`` ing the instance you may not call any methods on it, or pass it anywhere else. You also must not ``release`` it twice.
+
+If you do not create the COM instance yourself, but rather get it through another API call, you must first call ``init`` to ensure the COM interface is properly initialised. Similarly, once you are done with COM, you should call ``shutdown`` to uninitialise it.
+
