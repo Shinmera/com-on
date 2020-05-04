@@ -15,7 +15,6 @@
   :source-control (:git "https://github.com/shinmera/com-on.git")
   :serial T
   :components ((:file "package")
-               (:file "weak-enum")
                (:file "bindings")
                (:file "wrapper")
                (:file "documentation"))

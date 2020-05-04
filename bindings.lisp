@@ -23,7 +23,7 @@
   (:disable-ole1dde #x4)
   (:speed-over-memory #x8))
 
-(defcenum* hresult
+(cffi:defcenum (hresult :int :allow-undeclared-values T)
   (:ok #x00000000)
   (:false #x00000001)
   (:abort #x80004004)
