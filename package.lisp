@@ -39,6 +39,7 @@
 
 (defpackage #:org.shirakumo.com-on
   (:use #:cl)
+  (:import-from #:org.shirakumo.com-on.cffi #:guid)
   (:local-nicknames
    (#:com #:org.shirakumo.com-on.cffi))
   ;; com.lisp
