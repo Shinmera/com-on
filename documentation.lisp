@@ -271,6 +271,13 @@ The reordering is due to the little-endian internal representation of
 the octets.
 
 See GUID")
+
+  (function guid=
+    "Compares two GUIDs for equality.
+
+Returns T if the two GUIDs are the same, NIL otherwise.
+
+See GUID")
   
   (function guid
     "Create a new GUID instance.

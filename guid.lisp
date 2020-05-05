@@ -79,6 +79,11 @@
         (write-char #\- out)
         (print-bytes 10 16 :msb)))))
 
+(defun guid= (a b)
+  (loop for ab across (bytes a)
+        for bb across (bytes b)
+        always (= ab bb)))
+
 (defmethod cffi:translate-to-foreign ((guid guid) (type com:guid))
   (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))
 

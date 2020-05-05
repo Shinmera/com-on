@@ -68,5 +68,6 @@
    #:guid
    #:bytes
    #:guid-string
+   #:guid=
    #:guid
    #:define-guid))
