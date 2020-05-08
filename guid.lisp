@@ -53,8 +53,7 @@
        (fill dat 0)))))
 
 (defmethod print-object ((guid guid) stream)
-  (print-unreadable-object (guid stream :type T)
-    (format stream "(~s ~s)" 'guid (guid-string guid))))
+  (format stream "(~s ~s)" 'guid (guid-string guid)))
 
 (defmethod make-load-form ((guid guid) &optional env)
   (declare (ignore env))
@@ -84,6 +83,20 @@
         for bb across (bytes b)
         always (= ab bb)))
 
+(cffi:defctype guid (:struct com:guid))
+
+(defmethod cffi:translate-to-foreign ((guid guid) (type (eql 'guid)))
+  (cffi:translate-to-foreign guid (find-class 'com:guid)))
+
+(defmethod cffi:translate-from-foreign (ptr (type (eql 'guid)))
+  (cffi:translate-from-foreign ptr (find-class 'com:guid)))
+
+(defmethod cffi:free-translated-object (ptr (type (eql 'guid)) param)
+  (cffi:free-translated-object ptr (find-class 'com:guid) param))
+
+(defmethod cffi:translate-into-foreign-memory ((guid guid) (type (eql 'guid)) ptr)
+  (cffi:translate-into-foreign-memory guid (find-class 'com:guid) ptr))
+
 (defmethod cffi:translate-to-foreign ((guid guid) (type com:guid))
   (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))
 
@@ -105,4 +118,4 @@
 (defmacro define-guid (name &rest id)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (defconstant ,name (cond ((boundp ',name) (symbol-value ',name))
-                              (T (make-guid ,@id))))))
+                              (T (guid ,@id))))))
