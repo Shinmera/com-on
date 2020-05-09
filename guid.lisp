@@ -85,6 +85,9 @@
 
 (cffi:defctype guid :pointer)
 
+(defmethod cffi:foreign-type-size ((type (eql 'guid)))
+  (cffi:foreign-type-size 'com:guid))
+
 (defmethod cffi:translate-to-foreign ((guid guid) (type (eql 'guid)))
   (cffi:translate-to-foreign guid (find-class 'com:guid)))
 
