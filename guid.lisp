@@ -25,7 +25,7 @@
   (make-instance 'guid :bytes NIL))
 
 (defmethod cffi:foreign-type-size ((type guid))
-  (cffi:foreign-type-size 'com:guid))
+  (cffi:foreign-type-size '(:struct com:guid)))
 
 (defmethod cffi:translate-to-foreign ((guid guid) (type guid))
   (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))

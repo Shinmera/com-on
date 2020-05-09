@@ -33,7 +33,7 @@
                                  (function-name c) (code c) (message c)))))
 
 (declaim (inline win32-error))
-(defun win32-error (code &key function-name message (type win32-error))
+(defun win32-error (code &key function-name message (type 'win32-error))
   (error type :code code :function-name function-name
               :message (or message
                            (error-message
