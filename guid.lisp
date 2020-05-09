@@ -83,7 +83,7 @@
         for bb across (bytes b)
         always (= ab bb)))
 
-(cffi:defctype guid (:struct com:guid))
+(cffi:defctype guid :pointer)
 
 (defmethod cffi:translate-to-foreign ((guid guid) (type (eql 'guid)))
   (cffi:translate-to-foreign guid (find-class 'com:guid)))
