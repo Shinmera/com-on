@@ -45,6 +45,13 @@
 (defmethod cffi:expand-from-foreign (ptr (type guid))
   `(make-instance 'guid :id ,ptr))
 
+(defmethod cffi:expand-into-foreign-memory (val (type guid) ptr)
+  (let ((dat (gensym "DAT"))
+        (i (gensym "I")))
+    `(let ((,dat (bytes ,val)))
+       (dotimes (,i 16)
+         (setf (cffi:mem-aref ,ptr :uint8 ,i) (aref ,dat ,i))))))
+
 (defmethod cffi:expand-to-foreign-dyn (val var body (type guid))
   (let ((dat (gensym "DAT"))
         (i (gensym "I")))
@@ -90,9 +97,8 @@
                        for byte in d4
                        do (setf (aref dat i) byte))))))
         (cffi:foreign-pointer
-         (loop with dat = dat
-               for i from 0 below 16
-               do (setf (aref dat i) (cffi:mem-aref id :uint8 i))))
+         (dolist (i 16) 
+           (setf (aref dat i) (cffi:mem-aref id :uint8 i))))
         (vector
          (replace dat id))
         (null
