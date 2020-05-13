@@ -54,9 +54,13 @@
 
        ,@(loop for (method return . args) in methods
                ;; Default to hresult return
-               do (when (consp return)
-                    (push return args)
-                    (setf return 'com:hresult))
+               do (etypecase return
+                    (cons
+                     (push return args)
+                     (setf return 'com:hresult))
+                    (null
+                     (setf return 'com:hresult))
+                    (symbol))
                collect `(define-comfun (,name ,method) ,return
                           ,@args)))))
 
