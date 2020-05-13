@@ -30,7 +30,7 @@
 ;; Ensure we don't redefine and thrash existing values.
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (ignore-errors (cffi::parse-type 'hresult))
-    (cffi:defcenum (hresult :long :allow-undeclared-values T)
+    (cffi:defcenum (hresult :ulong :allow-undeclared-values T)
       (:ok #x00000000)
       (:false #x00000001)
       (:abort #x80004004)
