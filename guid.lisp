@@ -32,8 +32,16 @@
 (defmethod cffi::translate-aggregate-to-foreign (ptr (guid guid) (type guid))
   (cffi:translate-into-foreign-memory guid type ptr))
 
+(defmethod cffi::translate-aggregate-to-foreign (ptr guid-ish (type guid))
+  (cffi:translate-into-foreign-memory guid-ish type ptr))
+
 (defmethod cffi:translate-to-foreign ((guid guid) (type guid))
   (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))
+
+(defmethod cffi:translate-to-foreign (guid-ish (type guid))
+  (typecase guid-ish
+    (cffi:foreign-pointer guid-ish)
+    (T (cffi:translate-to-foreign (guid guid-ish) type))))
 
 (defmethod cffi:translate-from-foreign (ptr (type guid))
   (make-instance 'guid :id ptr))
@@ -47,24 +55,53 @@
     (dotimes (i 16 ptr)
       (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
 
+(defmethod cffi:translate-into-foreign-memory (guid-ish (type guid) ptr)
+  (typecase guid-ish
+    (guid
+     (let ((dat (bytes guid-ish)))
+       (dotimes (i 16 ptr)
+         (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
+    (T
+     (cffi:translate-into-foreign-memory (guid guid-ish) type ptr))))
+
 (defmethod cffi:expand-from-foreign (ptr (type guid))
   `(make-instance 'guid :id ,ptr))
 
 (defmethod cffi:expand-into-foreign-memory (val (type guid) ptr)
   (let ((dat (gensym "DAT"))
-        (i (gensym "I")))
-    `(let ((,dat (bytes ,val)))
-       (dotimes (,i 16)
-         (setf (cffi:mem-aref ,ptr :uint8 ,i) (aref ,dat ,i))))))
+        (i (gensym "I"))
+        (write-guid (gensym "WRITE-GUID")))
+    `(flet ((,write-guid (,dat)
+              (let ((,dat (bytes ,dat)))
+                (dotimes (,i 16)
+                  (setf (cffi:mem-aref ,ptr :uint8 ,i) (aref ,dat ,i))))))
+       (let ((,dat ,val))
+         (etypecase ,dat
+           (guid (,write-guid ,dat))
+           (T (,write-guid (guid ,dat))))))))
 
 (defmethod cffi:expand-to-foreign-dyn (val var body (type guid))
   (let ((dat (gensym "DAT"))
-        (i (gensym "I")))
-    `(cffi:with-foreign-object (,var 'guid)
-       (let ((,dat (bytes ,val)))
-         (dotimes (,i 16)
-           (setf (cffi:mem-aref ,var :uint8 ,i) (aref ,dat ,i))))
-       ,@body)))
+        (i (gensym "I"))
+        (thunk (gensym "THUNK")))
+    `(flet ((,thunk (,var)
+              ,@body))
+       (let ((,dat ,val))
+         (etypecase ,dat
+           (guid
+            (cffi:with-foreign-object (,var 'guid)
+              (let ((,dat (bytes ,dat)))
+                (dotimes (,i 16)
+                  (setf (cffi:mem-aref ,var :uint8 ,i) (aref ,dat ,i))))
+              (,thunk ,var)))
+           (cffi:foreign-pointer
+            (,thunk ,dat))
+           (T
+            (cffi:with-foreign-object (,var 'guid)
+              (let ((,dat (bytes (guid ,dat))))
+                (dotimes (,i 16)
+                  (setf (cffi:mem-aref ,var :uint8 ,i) (aref ,dat ,i))))
+              (,thunk ,var))))))))
 
 (defmethod initialize-instance :after ((guid guid) &key (id NIL id-p))
   (when id-p

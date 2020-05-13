@@ -14,11 +14,17 @@
 
 (define-test com-on)
 
-(cffi:defcallback guid-pointer :void ((guid :pointer))
+(cffi:defcallback guid-address :uint64 ((guid :pointer))
   (cffi:pointer-address guid))
+
+(defun guid-address (guid)
+  (cffi:foreign-funcall-pointer (cffi:callback guid-address) () com:guid guid :uint64))
 
 (cffi:defcallback guid-string :string ((guid com:guid))
   (com:guid-string guid))
+
+(defun guid-string (guid)
+  (cffi:foreign-funcall-pointer (cffi:callback guid-string) () com:guid guid :string))
 
 (cffi:defcstruct (struct :conc-name struct-)
   (before :int)
@@ -43,6 +49,8 @@
     (cffi:with-foreign-object (ptr 'com:guid)
       (let ((guid (random-guid)))
         (finish (setf (cffi:mem-ref ptr 'com:guid) guid))
+        (is com:guid= guid (cffi:mem-ref ptr 'com:guid))
+        (finish (setf (cffi:mem-ref ptr 'com:guid) (guid-string guid)))
         (is com:guid= guid (cffi:mem-ref ptr 'com:guid)))))
   (group (cffi:mem-aref "Retrieve GUIDs from a packed array")
     (cffi:with-foreign-object (ptr 'com:guid 2)
@@ -54,13 +62,9 @@
         (is com:guid= b (cffi:mem-aref ptr 'com:guid 1)))))
   (group (cffi:foreign-funcall "Call GUID functions by translating to pointer")
     (let ((guid (random-guid)))
-      (finish (cffi:foreign-funcall-pointer (cffi:callback guid-pointer) ()
-                                            com:guid guid
-                                            :void))
-      (is string= (com:guid-string guid)
-          (cffi:foreign-funcall-pointer (cffi:callback guid-string) ()
-                                        com:guid guid
-                                        :string))))
+      (finish (guid-address guid))
+      (is string= (com:guid-string guid) (guid-string guid))
+      (is string= (com:guid-string guid) (guid-string (com:guid-string guid)))))
   (group (cffi:foreign-slot-value "Access a packed GUID in a struct")
     (cffi:with-foreign-object (struct '(:struct struct))
       (let ((guid (random-guid)))
@@ -69,4 +73,10 @@
         (finish (setf (struct-after struct) 2))
         (is = 1 (struct-before struct))
         (is com:guid= guid (struct-guid struct))
-        (is = 2 (struct-after struct))))))
+        (is = 2 (struct-after struct))
+        (finish (setf (struct-guid struct) (com:guid-string guid)))
+        (is com:guid= guid (struct-guid struct)))))
+  (group (cffi:foreign-funcall "Preserve GUIDs when passing as pointers")
+    (cffi:with-foreign-object (ptr 'com:guid)
+      (setf (cffi:mem-ref ptr 'com:guid) (random-guid))
+      (is = (cffi:pointer-address ptr) (guid-address ptr)))))
