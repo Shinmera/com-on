@@ -118,24 +118,27 @@
   (declare (ignore env))
   `(guid ,(bytes guid)))
 
-(defun guid-string (guid)
-  (with-output-to-string (out)
-    (let ((dat (bytes guid)))
-      (flet ((print-bytes (start end mode)
-               (ecase mode
-                 (:lsb (loop for i downfrom (1- end) to start
-                             do (format out "~2,'0x" (aref dat i))))
-                 (:msb (loop for i from start below end
-                             do (format out "~2,'0x" (aref dat i)))))))
-        (print-bytes 0 4 :lsb)
-        (write-char #\- out)
-        (print-bytes 4 6 :lsb)
-        (write-char #\- out)
-        (print-bytes 6 8 :lsb)
-        (write-char #\- out)
-        (print-bytes 8 10 :msb)
-        (write-char #\- out)
-        (print-bytes 10 16 :msb)))))
+(defun guid-string (guid-ish)
+  (typecase guid-ish
+    (guid
+     (with-output-to-string (out)
+       (let ((dat (bytes guid-ish)))
+         (flet ((print-bytes (start end mode)
+                  (ecase mode
+                    (:lsb (loop for i downfrom (1- end) to start
+                                do (format out "~2,'0x" (aref dat i))))
+                    (:msb (loop for i from start below end
+                                do (format out "~2,'0x" (aref dat i)))))))
+           (print-bytes 0 4 :lsb)
+           (write-char #\- out)
+           (print-bytes 4 6 :lsb)
+           (write-char #\- out)
+           (print-bytes 6 8 :lsb)
+           (write-char #\- out)
+           (print-bytes 8 10 :msb)
+           (write-char #\- out)
+           (print-bytes 10 16 :msb)))))
+    (T (guid-string (guid guid-ish)))))
 
 (defun guid= (a b)
   (loop for ab across (bytes a)

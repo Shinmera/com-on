@@ -294,7 +294,8 @@ The bytes of the GUID are represented in hex format as follows:
  3 2 1 0 - 5 4 - 7 6 - 8 9 - 10 11 12 13 14 15
 
 The reordering is due to the little-endian internal representation of
-the octets.
+the octets. The passed GUID may either be a GUID instance, or a valid
+GUID identifier from which a GUID can be constructed.
 
 See GUID")
 
