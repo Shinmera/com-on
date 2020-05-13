@@ -228,7 +228,33 @@ then evaluates INIT. INIT should return a COM:HRESULT. If this result
 is not :OK, an error is signalled. Otherwise, the memory region bound
 to VAR is dereferenced as a value of TYPE, which is then returned.
 
-Seee CHECK-HRESULT"))
+Seee CHECK-HRESULT")
+
+  (function add-hresult
+    "Add HRESULT values.
+
+This allows you to dynamically add new HRESULT keys to the enum.
+The pairs should be specified like a plist:
+
+  (add-hresult :foo #xDEAD :bar #xBEEF)
+
+Existing keys or values will be silently overwritten.
+
+See DEFINE-HRESULT
+See COM:HRESULT")
+
+  (function define-hresult
+    "Define HRESULT values.
+
+This allows you to dynamically add new HRESULT enum keys as if by
+CFFI:DEFCENUM.
+
+  (define-hresult
+    (:foo #xDEAD)
+    (:bar #xBEEF))
+
+See ADD-HRESULT
+See COM:HRESULT"))
 
 ;;; guid.lisp
 (docs:define-docs

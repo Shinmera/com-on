@@ -58,3 +58,14 @@
   `(cffi:with-foreign-object (,var ,type)
      (check-hresult ,@init)
      (cffi:mem-ref ,var ,type)))
+
+(defun add-hresult (&rest pairs)
+  (let ((type (cffi::parse-type 'com:hresult)))
+    (loop for (key val) on pairs by #'cddr
+          do (setf (gethash key (cffi::keyword-values type)) val)
+             (setf (gethash val (cffi::value-keywords type)) key))))
+
+(defmacro define-hresult (&body pairs)
+  `(add-hresult ,@(loop for (key val) in pairs
+                        collect key
+                        collect val)))

@@ -61,7 +61,9 @@
    #:message
    #:check-last-error
    #:check-hresult
-   #:with-deref)
+   #:with-deref
+   #:add-hresult
+   #:define-hresult)
   ;; guid.lisp
   (:export
    #:guid
