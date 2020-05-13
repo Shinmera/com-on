@@ -39,6 +39,7 @@
 
 (defpackage #:org.shirakumo.com-on
   (:use #:cl)
+  (:import-from #:org.shirakumo.com-on.cffi #:hresult)
   (:local-nicknames
    (#:com #:org.shirakumo.com-on.cffi))
   ;; com.lisp
@@ -62,6 +63,7 @@
    #:check-last-error
    #:check-hresult
    #:with-deref
+   #:hresult
    #:add-hresult
    #:define-hresult)
   ;; guid.lisp
