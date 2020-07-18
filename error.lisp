@@ -50,7 +50,7 @@
 (defmacro check-hresult (value-form &rest expected)
   (let ((value (gensym "VALUE")))
     `(let ((,value ,value-form))
-       (if (find ,value ',(or expected '(:ok)))
+       (if (find ,value ',(or expected '(:ok :false)))
            ,value
            (win32-error ,value :function-name ',(first value-form))))))
 
