@@ -27,6 +27,9 @@
 (defmethod cffi:foreign-type-size ((type guid))
   (cffi:foreign-type-size '(:struct com:guid)))
 
+(defmethod cffi:foreign-type-alignment ((type guid))
+  (cffi:foreign-type-alignment '(:struct com:guid)))
+
 (defmethod cffi::aggregatep ((type guid)) T)
 
 (defmethod cffi::translate-aggregate-to-foreign (ptr (guid guid) (type guid))
