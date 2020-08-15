@@ -142,8 +142,10 @@
                        for byte in d4
                        do (setf (aref dat i) byte))))))
         (cffi:foreign-pointer
-         (dotimes (i 16)
-           (setf (aref dat i) (cffi:mem-aref id :uint8 i))))
+         (if (cffi:null-pointer-p id)
+             (fill dat 0)
+             (dotimes (i 16)
+               (setf (aref dat i) (cffi:mem-aref id :uint8 i)))))
         (vector
          (replace dat id))
         (null
