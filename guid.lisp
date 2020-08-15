@@ -41,6 +41,9 @@
 (defmethod cffi:translate-to-foreign ((guid guid) (type guid))
   (cffi:translate-into-foreign-memory guid type (cffi:foreign-alloc :uint8 :count 16)))
 
+(defmethod cffi:translate-to-foreign (thing (type (eql 'guid)))
+  (cffi:translate-to-foreign thing (make-instance 'guid :bytes NIL)))
+
 (defmethod cffi:translate-to-foreign (guid-ish (type guid))
   (typecase guid-ish
     (cffi:foreign-pointer guid-ish)
