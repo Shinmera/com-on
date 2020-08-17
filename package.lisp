@@ -32,6 +32,7 @@
    #:initialize
    #:uninitialize
    #:create-instance
+   #:task-mem-free
    #:wide-char-to-multi-byte
    #:multi-byte-to-wide-char
    #:get-last-error
