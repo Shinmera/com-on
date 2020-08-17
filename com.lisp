@@ -11,7 +11,8 @@
 (defun create (class instance)
   (init)
   (with-deref (com :pointer)
-    (com:create-instance class (cffi:null-pointer) com:CLSCTX-ALL instance com)))
+    (cffi:foreign-funcall "CoCreateInstance" guid class :pointer (cffi:null-pointer) com:dword com:CLSCTX-ALL
+                          guid instance :pointer com com:hresult)))
 
 (defun release (pointer)
   (cffi:foreign-funcall-pointer
