@@ -44,26 +44,29 @@
           ,return-type)))))
 
 (defmacro define-comstruct (name &body methods)
-  (let ((methods (list* `(query-interface (uid guid) (out :pointer))
-                        `(add-ref :unsigned-long)
-                        `(release :unsigned-long)
-                        methods)))
-    `(progn
-       (cffi:defcstruct (,name :conc-name ,(format NIL "%~a-" name))
-         ,@(loop for method in methods
-                 collect (list (first method) :pointer)))
+  (destructuring-bind (name &key bare) (if (listp name) name (list name))
+    (let ((methods (if bare
+                       methods
+                       (list* `(query-interface (uid guid) (out :pointer))
+                              `(add-ref :unsigned-long)
+                              `(release :unsigned-long)
+                              methods))))
+      `(progn
+         (cffi:defcstruct (,name :conc-name ,(format NIL "%~a-" name))
+           ,@(loop for method in methods
+                   collect (list (first method) :pointer)))
 
-       ,@(loop for (method return . args) in methods
-               ;; Default to hresult return
-               do (etypecase return
-                    (cons
-                     (push return args)
-                     (setf return 'com:hresult))
-                    (null
-                     (setf return 'com:hresult))
-                    (symbol))
-               collect `(define-comfun (,name ,method) ,return
-                          ,@args)))))
+         ,@(loop for (method return . args) in methods
+                 ;; Default to hresult return
+                 do (etypecase return
+                      (cons
+                       (push return args)
+                       (setf return 'com:hresult))
+                      (null
+                       (setf return 'com:hresult))
+                      (symbol))
+                 collect `(define-comfun (,name ,method) ,return
+                            ,@args))))))
 
 (defun init ()
   (unless *initialized*
