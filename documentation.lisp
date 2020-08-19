@@ -73,10 +73,15 @@ See DEFINE-COMSTRUCT")
   (function define-comstruct
     "Define a COM interface structure.
 
-NAME should be the name of the CFFI structure type as well as the
-standard prefix for all structure interface methods. You may choose
-this arbitrarily and there is no binding to any C functions or
-structures.
+NAME should be of the following structure:
+
+  NAME      ::= name | (name &key bare conc-name)
+  name      --- The name of the CFFI structure type.
+  bare      --- If set, the structure will not be an IUnknown, and
+                will thus not include the standard methods
+                QueryInterface, AddRef, and Release.
+  conc-name --- The prefix for the structure interface functions.
+                If not set, the name is used as a prefix.
 
 METHODS should be a body of the following kinds of entries:
 

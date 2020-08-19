@@ -27,15 +27,21 @@
           (progn ,@body)
        (release ,var))))
 
-(defmacro define-comfun ((struct method &rest options) return-type &body args)
+(defmacro define-comfun ((struct method &key options (conc-name NIL cnp)) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))
          (structg (gensym "STRUCT"))
-         (name (intern (format NIL "~a-~a" struct method))))
+         (std-name (intern (format NIL "~a-~a" struct method)))
+         (name (cond ((not cnp)
+                      std-name)
+                     ((null conc-name)
+                      method)
+                     (T
+                      (intern (format NIL "~a~a" conc-name method))))))
     `(progn
        (declaim (inline ,name))
        (defun ,name (,structg ,@(mapcar #'first args))
          (cffi:foreign-funcall-pointer
-          (,(intern (format NIL "%~a" name))
+          (,(intern (format NIL "%~a" std-name))
            (com:vtbl ,structg))
           ,options
           :pointer ,structg
@@ -44,13 +50,14 @@
           ,return-type)))))
 
 (defmacro define-comstruct (name &body methods)
-  (destructuring-bind (name &key bare) (if (listp name) name (list name))
+  (destructuring-bind (name &key bare (conc-name NIL cnp)) (if (listp name) name (list name))
     (let ((methods (if bare
                        methods
                        (list* `(query-interface (uid guid) (out :pointer))
                               `(add-ref :unsigned-long)
                               `(release :unsigned-long)
-                              methods))))
+                              methods)))
+          (conc-name (if cnp conc-name (format NIL "~a-" name))))
       `(progn
          (cffi:defcstruct (,name :conc-name ,(format NIL "%~a-" name))
            ,@(loop for method in methods
@@ -65,7 +72,7 @@
                       (null
                        (setf return 'com:hresult))
                       (symbol))
-                 collect `(define-comfun (,name ,method) ,return
+                 collect `(define-comfun (,name ,method :conc-name ,conc-name) ,return
                             ,@args))))))
 
 (defun init ()
