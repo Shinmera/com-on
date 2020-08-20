@@ -56,6 +56,9 @@
   (declare (ignore param))
   (cffi:foreign-free ptr))
 
+(defmethod cffi:translate-into-foreign-memory ((guid guid) (type (eql 'guid)) ptr)
+  (cffi:translate-into-foreign-memory guid guid ptr))
+
 (defmethod cffi:translate-into-foreign-memory ((guid guid) (type guid) ptr)
   (let ((dat (bytes guid)))
     (dotimes (i 16 ptr)
