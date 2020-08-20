@@ -20,10 +20,13 @@
       pointer)))
 
 (defun error-message (&optional (errno (com:get-last-error)))
-  (cffi:with-foreign-object (string 'com:wchar 256)
-    (com:format-message (logior com:FORMAT-MESSAGE-FROM-SYSTEM com:FORMAT-MESSAGE-IGNORE-INSERTS)
-                        (cffi:null-pointer) errno 0 string 256 (cffi:null-pointer))
-    (wstring->string string)))
+  (let ((errno (etypecase errno
+                 (integer errno)
+                 (symbol (cffi:foreign-enum-value 'com:hresult errno)))))
+    (cffi:with-foreign-object (string 'com:wchar 256)
+      (com:format-message (logior com:FORMAT-MESSAGE-FROM-SYSTEM com:FORMAT-MESSAGE-IGNORE-INSERTS)
+                          (cffi:null-pointer) errno 0 string 256 (cffi:null-pointer))
+      (wstring->string string))))
 
 (define-condition win32-error (error)
   ((function-name :initarg :function-name :initform NIL :reader function-name)
