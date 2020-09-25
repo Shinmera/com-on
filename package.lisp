@@ -56,6 +56,7 @@
   (:export
    #:wstring->string
    #:string->wstring
+   #:with-wstring
    #:error-message
    #:win32-error
    #:function-name

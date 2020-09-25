@@ -19,6 +19,13 @@
       (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 pointer chars)
       pointer)))
 
+(defmacro with-wstring ((var string) &body body)
+  `(let ((,var (string->wstring ,string)))
+     (unwind-protect
+          (let ((,var ,var))
+            ,@body)
+       (cffi:foreign-free ,var))))
+
 (defun error-message (&optional (errno (com:get-last-error)))
   (let ((errno (etypecase errno
                  (integer errno)
