@@ -79,7 +79,8 @@
   (unless *initialized*
     (cffi:load-foreign-library 'com:ole32)
     (check-hresult
-     (com:initialize (cffi:null-pointer) :multi-threaded))
+     (com:initialize (cffi:null-pointer) :multi-threaded)
+     :ok :false :changed-thread-mode)
     (setf *initialized* T)))
 
 (defun shutdown ()

@@ -43,7 +43,9 @@
       (:not-implemented #x80004001)
       (:out-of-memory   #x8007000e)
       (:pointer         #x80004003)
-      (:unexpected      #x8000ffff))))
+      (:unexpected      #x8000ffff)
+      (:changed-thread-mode #x80010106)
+      (:already-initialized #x88890002))))
 
 (cffi:defcstruct (com :conc-name || :class com)
   (vtbl :pointer))
