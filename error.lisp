@@ -10,7 +10,8 @@
   (let ((bytes (com:wide-char-to-multi-byte com:CP-UTF8 0 pointer chars (cffi:null-pointer) 0 (cffi:null-pointer) (cffi:null-pointer))))
     (cffi:with-foreign-object (string :uchar bytes)
       (com:wide-char-to-multi-byte com:CP-UTF8 0 pointer chars string bytes (cffi:null-pointer) (cffi:null-pointer))
-      (cffi:foreign-string-to-lisp string :encoding :utf-8))))
+      (let ((babel::*suppress-character-coding-errors* T))
+        (cffi:foreign-string-to-lisp string :encoding :utf-8)))))
 
 (defun string->wstring (string)
   (cffi:with-foreign-string (string string)
