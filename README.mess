@@ -70,8 +70,9 @@ In order to translate this and make it usable from Lisp, we would write the foll
 ;; ...
 
 (com:define-comstruct device-enumerator
-  (enum-audio-endpoints (data-flow e-data-flow) (state-mask :uint32) (devices :pointer))
+  (enum-audio-endpoints (data-flow data-flow) (state-mask :uint32) (devices :pointer))
   (get-default-audio-endpoint (data-flow data-flow) (role role) (endpoint :pointer))
+  (get-device (id :pointer) (device :pointer))
   (register-endpoint-notification-callback (client :pointer))
   (unregister-endpoint-notification-callback (client :pointer)))
 ::
