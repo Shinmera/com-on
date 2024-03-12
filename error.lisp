@@ -62,12 +62,14 @@
 
 (declaim (inline win32-error))
 (defun win32-error (code &key function-name message (type 'win32-error))
-  (error type :code code :function-name function-name
-              :message (or message
-                           (error-message
-                            (etypecase code
-                              (keyword (cffi:foreign-enum-value 'com:hresult code))
-                              (integer code))))))
+  (let ((code (if (eql T code) (com:get-last-error) code)))
+    (error type :code code
+                :function-name function-name
+                :message (or message
+                             (error-message
+                              (etypecase code
+                                (keyword (cffi:foreign-enum-value 'com:hresult code))
+                                (integer code)))))))
 
 (defmacro check-last-error (predicate &body cleanup)
   `(unless ,predicate
