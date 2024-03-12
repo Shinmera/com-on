@@ -1,5 +1,28 @@
 (in-package #:org.shirakumo.com-on)
 
+(cffi:define-foreign-type wstring ()
+  ()
+  (:actual-type :pointer))
+
+(cffi:define-parse-method wstring ()
+  (make-instance 'wstring))
+
+(defmethod cffi:translate-to-foreign ((string string) (type wstring))
+  (values (string->wstring string) T))
+
+(defmethod cffi:translate-to-foreign (obj (type wstring))
+  (if (cffi:pointerp obj)
+      (values obj NIL)
+      (error "~a is neither a string nor pointer." obj)))
+
+(defmethod cffi:translate-from-foreign (ptr (type wstring))
+  (unwind-protect (wstring->string ptr)
+    (cffi:foreign-free ptr)))
+
+(defmethod cffi:free-translated-object (ptr (type wstring) free-p)
+  (when free-p
+    (cffi:foreign-free ptr)))
+
 (defun wstring->string (pointer &optional (chars -1))
   (let ((bytes (com:wide-char-to-multi-byte com:CP-UTF8 0 pointer chars (cffi:null-pointer) 0 (cffi:null-pointer) (cffi:null-pointer))))
     (cffi:with-foreign-object (string :uchar bytes)

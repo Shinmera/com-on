@@ -48,6 +48,7 @@
    #:shutdown)
   ;; error.lisp
   (:export
+   #:wstring
    #:wstring->string
    #:string->wstring
    #:with-wstring
