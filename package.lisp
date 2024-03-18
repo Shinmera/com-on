@@ -51,6 +51,7 @@
    #:wstring
    #:wstring->string
    #:string->wstring
+   #:wstring-length
    #:with-wstring
    #:error-message
    #:win32-error

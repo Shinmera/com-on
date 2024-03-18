@@ -30,12 +30,16 @@
       (let ((babel::*suppress-character-coding-errors* T))
         (cffi:foreign-string-to-lisp string :encoding :utf-8)))))
 
-(defun string->wstring (string)
+(defun string->wstring (string &optional buffer)
   (cffi:with-foreign-string (string string)
     (let* ((chars (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 (cffi:null-pointer) 0))
-           (pointer (cffi:foreign-alloc :uint16 :count chars)))
+           (pointer (or buffer (cffi:foreign-alloc :uint16 :count chars))))
       (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 pointer chars)
       pointer)))
+
+(defun wstring-length (string)
+  (cffi:with-foreign-string (string string)
+    (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 (cffi:null-pointer) 0)))
 
 (defmacro with-wstring ((var string) &body body)
   `(let ((,var (string->wstring ,string)))
