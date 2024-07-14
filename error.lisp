@@ -96,10 +96,32 @@
 (defun add-hresult (&rest pairs)
   (let ((type (cffi::parse-type 'com:hresult)))
     (loop for (key val) on pairs by #'cddr
-          do (setf (gethash key (cffi::keyword-values type)) val)
+          do (when (gethash key (cffi::keyword-values type))
+               (assert (= val (gethash key (cffi::keyword-values type)))))
+             (setf (gethash key (cffi::keyword-values type)) val)
              (setf (gethash val (cffi::value-keywords type)) key))))
 
 (defmacro define-hresult (&body pairs)
   `(add-hresult ,@(loop for (key val) in pairs
                         collect key
                         collect val)))
+
+(defmacro check-win32-error-code (value-form &rest expected)
+  (let ((value (gensym "VALUE")))
+    `(let ((,value ,value-form))
+       (if (find ,value ',(or expected '(:success)))
+           ,value
+           (win32-error ,value :function-name ',(first value-form))))))
+
+(defun add-win32-error-code (&rest pairs)
+  (let ((type (cffi::parse-type 'com:win32-error-code)))
+    (loop for (key val) on pairs by #'cddr
+          do (when (gethash key (cffi::keyword-values type))
+               (assert (= val (gethash key (cffi::keyword-values type)))))
+             (setf (gethash key (cffi::keyword-values type)) val)
+             (setf (gethash val (cffi::value-keywords type)) key))))
+
+(defmacro define-win32-error-code (&body pairs)
+  `(add-win32-error-code ,@(loop for (key val) in pairs
+                                 collect key
+                                 collect val)))

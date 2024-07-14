@@ -30,7 +30,13 @@
    #:wide-char-to-multi-byte
    #:multi-byte-to-wide-char
    #:get-last-error
-   #:format-message))
+   #:format-message
+   #:bool
+   #:boolean
+   #:handle
+   #:hdc
+   #:hglrc
+   #:win32-error-code))
 
 (defpackage #:org.shirakumo.com-on
   (:use #:cl)
@@ -63,7 +69,11 @@
    #:with-deref
    #:hresult
    #:add-hresult
-   #:define-hresult)
+   #:define-hresult
+   #:win32-error-code
+   #:add-win32-error-code
+   #:define-win32-error-code
+   #:check-win32-error-code)
   ;; guid.lisp
   (:export
    #:guid
