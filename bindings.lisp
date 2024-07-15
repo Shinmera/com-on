@@ -14,7 +14,6 @@
 (cffi:defctype long :int32)
 (cffi:defctype short :int16)
 (cffi:defctype byte :uint8)
-(cffi:defctype char :uint8)
 (cffi:defctype wchar :uint16)
 (cffi:defctype uint-ptr #+64-bit :uint64 #-64-bit :uint32)
 (cffi:defctype wparam :uintptr)
@@ -29,8 +28,21 @@
 (cffi:defctype boolean (:boolean :uint8)) ;; windows BOOLEAN, 0 or 1
 
 (cffi:defctype handle :intptr)
+
+(cffi:defctype hwnd :intptr)
+(cffi:defctype hinstance :intptr)
+(cffi:defctype hmodule :intptr)
 (cffi:defctype hdc :intptr)
 (cffi:defctype hglrc :intptr)
+(cffi:defctype hmenu :intptr)
+(cffi:defctype hbitmap :intptr)
+(cffi:defctype hicon :intptr)
+(cffi:defctype hgdiobj :intptr)
+(cffi:defctype hmonitor :intptr)
+(cffi:defctype hcursor :intptr)
+(cffi:defctype hbrush :intptr)
+(cffi:defctype hglobal (:pointer :void))
+(cffi:defctype hdrop :intptr)
 
 (cffi:defcenum init
   (:multi-threaded #x0)
