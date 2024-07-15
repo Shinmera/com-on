@@ -1,6 +1,6 @@
 (defpackage #:org.shirakumo.com-on.cffi
   (:use #:cl)
-  (:shadow #:byte)
+  (:shadow #:byte #:boolean)
   (:export
    #:ole32
    #:cp-utf8
@@ -34,15 +34,73 @@
    #:bool
    #:boolean
    #:handle
+   #:hresult
+   #:lresult
+   #:hwnd
    #:hdc
+   #:hinstance
+   #:hicon
+   #:hmenu
+   #:hcursor
+   #:hbrush
+   #:hbitmap
+   #:hmonitor
+   #:hmodule
+   #:handle
+   #:hglobal
+   #:hdrop
+   #:hgdiobj
+   #:lparam
+   #:wparam
    #:hglrc
    #:win32-error-code))
 
 (defpackage #:org.shirakumo.com-on
   (:use #:cl)
-  (:import-from #:org.shirakumo.com-on.cffi #:hresult)
+  (:shadowing-import-from #:org.shirakumo.com-on.cffi
+                          #:bool
+                          #:boolean
+                          #:hresult
+                          #:lresult
+                          #:hwnd
+                          #:hdc
+                          #:hinstance
+                          #:hicon
+                          #:hmenu
+                          #:hcursor
+                          #:hbrush
+                          #:hbitmap
+                          #:hmonitor
+                          #:hmodule
+                          #:handle
+                          #:hglobal
+                          #:hdrop
+                          #:hgdiobj
+                          #:lparam
+                          #:wparam)
   (:local-nicknames
    (#:com #:org.shirakumo.com-on.cffi))
+  ;; ffi types
+  (:export
+   #:bool
+   #:boolean
+   #:lresult
+   #:hwnd
+   #:hdc
+   #:hinstance
+   #:hicon
+   #:hmenu
+   #:hcursor
+   #:hbrush
+   #:hbitmap
+   #:hmonitor
+   #:hmodule
+   #:handle
+   #:hglobal
+   #:hdrop
+   #:hgdiobj
+   #:lparam
+   #:wparam)
   ;; com.lisp
   (:export
    #:create
