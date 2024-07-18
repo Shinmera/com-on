@@ -86,7 +86,7 @@ METHODS should be a body of the following kinds of entries:
                    any C function.
   return-value --- The return value of the method. If not passed
                    explicitly, HRESULT is assumed.
-  name         --- The name of the argumetn. Again, the name may be
+  name         --- The name of the argument. Again, the name may be
                    arbitrarily chosen.
   type         --- The CFFI type that the argument should be of.
 
@@ -154,7 +154,7 @@ See STRING->WSTRING")
 See WSTRING->STRING")
   
   (function error-message
-    "Returns the error messag string for the given error code.
+    "Returns the error message string for the given error code.
 
 Unless specifically supplied, the last caused error code is used.
 
