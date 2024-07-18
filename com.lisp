@@ -30,10 +30,13 @@
                      ((null conc-name)
                       method)
                      (T
-                      (intern (format NIL "~a~a" conc-name method))))))
+                      (intern (format NIL "~a~a" conc-name method)))))
+         (documentation (when (stringp (car args))
+                          (pop args))))
     `(progn
        (declaim (inline ,name))
        (defun ,name (,structg ,@(mapcar #'first args))
+         ,@(when documentation `(,documentation))
          (cffi:foreign-funcall-pointer
           (,(intern (format NIL "%~a" std-name))
            (com:vtbl ,structg))
@@ -45,15 +48,18 @@
 
 (defmacro define-comstruct (name &body methods)
   (destructuring-bind (name &key bare (conc-name NIL cnp)) (if (listp name) name (list name))
-    (let ((methods (if bare
-                       methods
-                       (list* `(query-interface (uid guid) (out :pointer))
-                              `(add-ref :unsigned-long)
-                              `(release :unsigned-long)
-                              methods)))
-          (conc-name (if cnp conc-name (format NIL "~a-" name))))
+    (let* ((documentation (when (stringp (car methods))
+                            (pop methods)))
+           (methods (if bare
+                        methods
+                        (list* `(query-interface (uid guid) (out :pointer))
+                               `(add-ref :unsigned-long)
+                               `(release :unsigned-long)
+                               methods)))
+           (conc-name (if cnp conc-name (format NIL "~a-" name))))
       `(progn
          (cffi:defcstruct (,name :conc-name ,(format NIL "%~a-" name))
+           ,@(when documentation `(,documentation))
            ,@(loop for method in methods
                    collect (list (first method) :pointer)))
 
