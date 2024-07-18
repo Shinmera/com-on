@@ -49,8 +49,9 @@ See RELEASE")
   (function define-comfun
     "Define a method on a COM interface.
 
-ARGS should be a list of argument declarations, with each argument
-being composed of an argument name and a CFFI type.
+ARGS should be an optional docstring followed by a list of argument
+declarations, with each argument being composed of an argument name
+and a CFFI type.
 
 This will create a function with the name of STRUCT-METHOD with the
 declared arguments, which will attempt to call the related COM method
@@ -77,7 +78,8 @@ NAME should be of the following structure:
   conc-name --- The prefix for the structure interface functions.
                 If not set, the name is used as a prefix.
 
-METHODS should be a body of the following kinds of entries:
+METHODS should be a body of the following kinds of entries after an
+optional docstring:
 
   METHODS      ::= (method [return-value] ARGUMENT*)*
   ARGUMENT     ::= (name type)
