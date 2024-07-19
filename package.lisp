@@ -77,7 +77,8 @@
                           #:hdrop
                           #:hgdiobj
                           #:lparam
-                          #:wparam)
+                          #:wparam
+                          #:win32-error-code)
   (:local-nicknames
    (#:com #:org.shirakumo.com-on.cffi))
   ;; ffi types
