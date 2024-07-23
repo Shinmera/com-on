@@ -66,6 +66,7 @@
          ,@(loop for (method return . args) in methods
                  ;; Default to hresult return
                  do (etypecase return
+                      ((cons keyword))
                       (cons
                        (push return args)
                        (setf return 'com:hresult))
