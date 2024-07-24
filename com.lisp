@@ -88,3 +88,5 @@
   (when *initialized*
     (com:uninitialize)
     (setf *initialized* NIL)))
+
+(define-comstruct iunknown)
