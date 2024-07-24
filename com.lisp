@@ -90,3 +90,12 @@
     (setf *initialized* NIL)))
 
 (define-comstruct iunknown)
+
+(defun query-interface (object riid)
+  (cffi:with-foreign-objects ((out '(:pointer :pointer)))
+    (check-hresult (iunknown-query-interface object riid out))
+    (cffi:mem-ref out :pointer)))
+
+(declaim (inline add-ref))
+(defun add-ref (object)
+  (iunknown-add-ref object))

@@ -114,7 +114,9 @@
    #:iunknown
    #:iunknown-query-interface
    #:iunknown-add-ref
-   #:iunknown-release)
+   #:iunknown-release
+   #:query-interface
+   #:add-ref)
   ;; error.lisp
   (:export
    #:wstring

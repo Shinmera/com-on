@@ -35,6 +35,30 @@ that returns an instance.
 See CREATE
 See WITH-COM")
 
+  (function query-interface
+    "Query a COM object for a pointer to one of its interfaces.
+
+OBJECT must be a valid com instance.
+
+RIID should be a GUID or string representation of a GUID.
+
+Returns the pointer to the COM interface if successful, or signals an
+error otherwise. You must release this interface when you are done
+with it by calling RELEASE.
+
+See WITH-COM
+See RELEASE")
+
+  (function add-ref
+    "Increments the reference count for an interface pointer to a COM object.
+
+OBJECT must be a valid com instance.
+
+Returns the new reference count. This value is intended to be used only for test purposes.
+
+See CREATE
+See RELEASE")
+
   (function with-com
     "Hold a COM instance for the duration of the body.
 
