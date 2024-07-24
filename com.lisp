@@ -23,7 +23,7 @@
 
 (defmacro define-comfun ((struct method &key options (conc-name NIL cnp)) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))
-         (structg (gensym "STRUCT"))
+         (structg (make-symbol (symbol-name struct)))
          (std-name (intern (format NIL "~a-~a" struct method)))
          (name (cond ((not cnp)
                       std-name)
