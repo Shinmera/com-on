@@ -110,7 +110,11 @@
    #:define-comfun
    #:define-comstruct
    #:init
-   #:shutdown)
+   #:shutdown
+   #:iunknown
+   #:iunknown-query-interface
+   #:iunknown-add-ref
+   #:iunknown-release)
   ;; error.lisp
   (:export
    #:wstring
