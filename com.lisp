@@ -63,24 +63,36 @@
                   collect type collect name)
           ,return-type)))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun inherited-methods (name include &optional path)
+    (when include
+      (when (member include path)
+        (error "Circular include while defining ~s?~% include path = ~s"
+               name (cons include path)))
+      (let ((inherited (getf (symbol-plist include) 'comstruct-methods)))
+        (assert inherited ()
+                "Couldn't find included comstruct ~s while defining ~s~@[~% included from ~{ ~s~^,~}~]" include name path)
+        (append (inherited-methods name (first inherited) (cons include path))
+                (rest inherited))))))
+
 (defmacro define-comstruct (name &body methods)
-  (destructuring-bind (name &key bare (conc-name NIL cnp)) (if (listp name) name (list name))
+  (destructuring-bind (name &key (include 'iunknown) (conc-name NIL cnp))
+      (if (listp name) name (list name))
     (let* ((documentation (when (stringp (car methods))
                             (pop methods)))
-           (methods (if bare
-                        methods
-                        (list* `(query-interface (uid guid) (out :pointer))
-                               `(add-ref :unsigned-long)
-                               `(release :unsigned-long)
-                               methods)))
+           (inherited (inherited-methods name include (list name)))
+           (all-methods (append inherited methods))
            (conc-name (if cnp conc-name (format NIL "~a-" name))))
       `(progn
+         (eval-when (:compile-toplevel :load-toplevel :execute)
+           (setf (getf (symbol-plist ',name) 'comstruct-methods)
+                 '(,include ,@methods)))
          (cffi:defcstruct (,name :conc-name ,(format NIL "%~a-" name))
            ,@(when documentation `(,documentation))
-           ,@(loop for method in methods
+           ,@(loop for method in all-methods
                    collect (list (first method) :pointer)))
 
-         ,@(loop for (method return . args) in methods
+         ,@(loop for (method return . args) in all-methods
                  ;; Default to hresult return
                  do (etypecase return
                       ((cons keyword))
@@ -106,7 +118,10 @@
     (com:uninitialize)
     (setf *initialized* NIL)))
 
-(define-comstruct iunknown)
+(define-comstruct (iunknown :include NIL)
+  (query-interface (uid guid) (out :pointer))
+  (add-ref :unsigned-long)
+  (release :unsigned-long))
 
 (defun query-interface (object riid)
   (cffi:with-foreign-objects ((out '(:pointer :pointer)))
