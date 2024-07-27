@@ -106,7 +106,9 @@
   (:export
    #:create
    #:release
+   #:releasef
    #:with-com
+   #:with-com*
    #:define-comfun
    #:define-comstruct
    #:init

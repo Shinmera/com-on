@@ -22,7 +22,7 @@ See WIN32-ERROR
 See RELEASE
 See INIT
 See WITH-COM")
-  
+
   (function release
     "Release a COM instance.
 
@@ -33,7 +33,20 @@ You may get a COM instance through CREATE or some other API function
 that returns an instance.
 
 See CREATE
-See WITH-COM")
+See RELEASEF
+See WITH-COM
+See WITH-COM*")
+
+  (function releasef
+    "Release a COM instance in PLACE if not NIL, and set PLACE to NIL.
+
+You may get a COM instance through CREATE or some other API function
+that returns an instance.
+
+See CREATE
+See RELEASE
+See WITH-COM
+See WITH-COM*")
 
   (function query-interface
     "Query a COM object for a pointer to one of its interfaces.
@@ -69,7 +82,23 @@ INIT may be any form that returns a pointer to a COM instance.
 
 See CREATE
 See RELEASE")
-  
+
+  (function with-com*
+    "Hold one or more COM instance for the duration of the body.
+
+When the body is exited by any means, RELEASEF will be called on
+variables defined by BINDINGS.
+
+BINDINGS is a list of VARIABLE or (VARIABLE INIT), where INIT is
+expected to return a COM instance to initialize VARIABLE. If INIT is
+not provided, VARIABLE will be initialized to NIL. Bindings are
+created as with LET*, so earlier bindings can be used in INIT.
+
+See CREATE
+See RELEASE
+See RELEASEF
+See WITH-COM")
+
   (function define-comfun
     "Define a method on a COM interface.
 

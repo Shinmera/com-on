@@ -15,11 +15,28 @@
    :pointer pointer
    :unsigned-long))
 
+(defmacro releasef (place)
+  (let ((tmp (gensym "PLACE")))
+    `(let ((,tmp ,place))
+       (when ,tmp
+         (release (shiftf ,tmp NIL))))))
+
 (defmacro with-com ((var init) &body body)
   `(let ((,var ,init))
      (unwind-protect
           (progn ,@body)
        (release ,var))))
+
+(defmacro with-com* ((&rest bindings) &body body)
+  (let ((vars NIL))
+    `(let* (,@(loop for binding in bindings
+                   for var = (if (consp binding) (first binding) binding)
+                   for init = (if (consp binding) (second binding) NIL)
+                   do (push var vars)
+                   collect (list var init)))
+       (unwind-protect
+            (progn ,@body)
+         ,@(loop for var in vars collect `(releasef ,var))))))
 
 (defmacro define-comfun ((struct method &key options (conc-name NIL cnp)) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))
