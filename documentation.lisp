@@ -123,11 +123,12 @@ See DEFINE-COMSTRUCT")
 
 NAME should be of the following structure:
 
-  NAME      ::= name | (name &key bare conc-name)
+  NAME      ::= name | (name &key (include 'iunknown) conc-name)
   name      --- The name of the CFFI structure type.
-  bare      --- If set, the structure will not be an IUnknown, and
-                will thus not include the standard methods
-                QueryInterface, AddRef, and Release.
+  include   --- COM interface to include in the interface being defined.
+                Defaults to IUnknown. If set to NIL, the structure will
+                not be an IUnknown, and will thus not include the standard
+                methods QueryInterface, AddRef, and Release.
   conc-name --- The prefix for the structure interface functions.
                 If not set, the name is used as a prefix.
 
@@ -151,8 +152,9 @@ defined in the C header and cannot skip any. The order is what
 actually defines which method is used. The name is purely on the Lisp
 side.
 
-Each COM interface always has the following three methods at the
-beginning, which DEFINE-COMSTRUCT adds for you automatically:
+Each COM interface (almost) always includes IUnknown, so has the
+following three methods at the beginning, which DEFINE-COMSTRUCT adds
+for you automatically:
 
   (QUERY-INTERFACE HRESULT (UID :POINTER) (OUT :POINTER))
   (ADD-REF :ULONG)
