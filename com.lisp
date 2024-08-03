@@ -19,7 +19,8 @@
   (let ((tmp (gensym "PLACE")))
     `(let ((,tmp ,place))
        (when ,tmp
-         (release (shiftf ,tmp NIL))))))
+         (setf ,place NIL)
+         (release ,tmp)))))
 
 (defmacro with-com ((var init) &body body)
   `(let ((,var ,init))
