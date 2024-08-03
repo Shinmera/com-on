@@ -16,8 +16,8 @@
       (error "~a is neither a string nor pointer." obj)))
 
 (defmethod cffi:translate-from-foreign (ptr (type wstring))
-  (unwind-protect (wstring->string ptr)
-    (cffi:foreign-free ptr)))
+  (unless (cffi:null-pointer-p ptr)
+    (wstring->string ptr)))
 
 (defmethod cffi:free-translated-object (ptr (type wstring) free-p)
   (when free-p
