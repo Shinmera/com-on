@@ -58,6 +58,11 @@
     (dotimes (i 16 ptr)
       (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
 
+(defmethod cffi:translate-into-foreign-memory ((guid guid) (type com:guid) ptr)
+  (let ((dat (bytes guid)))
+    (dotimes (i 16 ptr)
+      (setf (cffi:mem-aref ptr :uint8 i) (aref dat i)))))
+
 (defmethod cffi:translate-into-foreign-memory (guid-ish (type guid) ptr)
   (typecase guid-ish
     (guid
