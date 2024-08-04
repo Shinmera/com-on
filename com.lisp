@@ -9,11 +9,12 @@
                           guid instance :pointer com com:hresult)))
 
 (defun release (pointer)
-  (cffi:foreign-funcall-pointer
-   (cffi:mem-aref (com:vtbl pointer) :pointer 2)
-   ()
-   :pointer pointer
-   :unsigned-long))
+  (unless (cffi:null-pointer-p pointer)
+    (cffi:foreign-funcall-pointer
+     (cffi:mem-aref (com:vtbl pointer) :pointer 2)
+     ()
+     :pointer pointer
+     :unsigned-long)))
 
 (defmacro releasef (place)
   (let ((tmp (gensym "PLACE")))
