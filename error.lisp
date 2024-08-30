@@ -35,7 +35,7 @@
     (let* ((chars (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 (cffi:null-pointer) 0))
            (pointer (or buffer (cffi:foreign-alloc :uint16 :count chars))))
       (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 pointer chars)
-      pointer)))
+      (values pointer (* 2 chars)))))
 
 (defun wstring-length (string)
   (cffi:with-foreign-string (string string)
