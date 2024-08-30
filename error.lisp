@@ -41,8 +41,9 @@
   (cffi:with-foreign-string (string string)
     (com:multi-byte-to-wide-char com:CP-UTF8 0 string -1 (cffi:null-pointer) 0)))
 
-(defmacro with-wstring ((var string) &body body)
-  `(let ((,var (string->wstring ,string)))
+(defmacro with-wstring ((var string &optional (size (gensym "SIZE"))) &body body)
+  `(multiple-value-bind (,var ,size) (string->wstring ,string)
+     (declare (ignorable ,size))
      (unwind-protect
           (let ((,var ,var))
             ,@body)
