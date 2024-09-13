@@ -97,8 +97,11 @@
 (defun add-hresult (&rest pairs)
   (let ((type (cffi::parse-type 'com:hresult)))
     (loop for (key val) on pairs by #'cddr
-          do (when (gethash key (cffi::keyword-values type))
-               (assert (= val (gethash key (cffi::keyword-values type)))))
+          for existing = (gethash key (cffi::keyword-values type))
+          do (when (and existing (/= val existing))
+               (cerror "Override the key"
+                       "The key ~s is already associated with the value ~8,'0x, Can't add ~8,'0x"
+                       key existing val))
              (setf (gethash key (cffi::keyword-values type)) val)
              (setf (gethash val (cffi::value-keywords type)) key))))
 
