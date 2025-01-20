@@ -215,6 +215,9 @@ See WSTRING->STRING")
 
 Unless specifically supplied, the last caused error code is used.
 
+If you need to get an error message from a library, pass the library
+handle as the second argument to this function.
+
 See COM:GET-LAST-ERROR")
   
   (type win32-error

@@ -5,6 +5,7 @@
 
 (defconstant CP-UTF8 65001)
 (defconstant CLSCTX-ALL 23)
+(defconstant FORMAT-MESSAGE-FROM-HMODULE 2048)
 (defconstant FORMAT-MESSAGE-FROM-SYSTEM 4096)
 (defconstant FORMAT-MESSAGE-IGNORE-INSERTS 512)
 ;; https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types

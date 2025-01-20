@@ -5,6 +5,7 @@
    #:ole32
    #:cp-utf8
    #:clsctx-all
+   #:format-message-from-hmodule
    #:format-message-from-system
    #:format-message-ignore-inserts
    #:dword
