@@ -10,6 +10,9 @@
 (defmethod cffi:translate-to-foreign ((string string) (type wstring))
   (values (string->wstring string) T))
 
+(defmethod cffi:translate-to-foreign ((null null) (type wstring))
+  (values (cffi:null-pointer) T))
+
 (defmethod cffi:translate-to-foreign (obj (type wstring))
   (if (cffi:pointerp obj)
       (values obj NIL)
