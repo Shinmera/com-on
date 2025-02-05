@@ -92,20 +92,22 @@
          (cffi:defcstruct (,name :conc-name ,(format NIL "%~a-" name))
            ,@(when documentation `(,documentation))
            ,@(loop for method in all-methods
-                   collect (list (first method) :pointer)))
+                   collect (list (if (listp method) (first method) method) :pointer)))
 
-         ,@(loop for (method return . args) in all-methods
-                 ;; Default to hresult return
-                 do (etypecase return
-                      ((cons keyword))
-                      (cons
-                       (push return args)
-                       (setf return 'com:hresult))
-                      (null
-                       (setf return 'com:hresult))
-                      (symbol))
-                 collect `(define-comfun (,name ,method :conc-name ,conc-name) ,return
-                            ,@args))))))
+         ,@(loop for method in all-methods
+                 when (listp method)
+                 collect (destructuring-bind (method &optional return &rest args) method
+                           ;; Default to hresult return
+                           (etypecase return
+                             ((cons keyword))
+                             (cons
+                              (push return args)
+                              (setf return 'com:hresult))
+                             (null
+                              (setf return 'com:hresult))
+                             (symbol))
+                           `(define-comfun (,name ,method :conc-name ,conc-name) ,return
+                              ,@args)))))))
 
 (defun init ()
   (unless *initialized*
