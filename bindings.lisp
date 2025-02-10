@@ -3,6 +3,11 @@
 (cffi:define-foreign-library ole32
   (T (:default "Ole32")))
 
+(set 'cl-user::*foreign-system-libraries*
+     (union (when (boundp 'cl-user::*foreign-system-libraries*)
+              (symbol-value 'cl-user::*foreign-system-libraries*))
+            '(ole32)))
+
 (defconstant CP-UTF8 65001)
 (defconstant CLSCTX-ALL 23)
 (defconstant FORMAT-MESSAGE-FROM-HMODULE 2048)
