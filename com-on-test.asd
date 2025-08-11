@@ -4,9 +4,9 @@
   :author "Yukari Hafner <shinmera@tymoon.eu>"
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "Test system for com-on"
-  :homepage "https://shinmera.github.io/com-on/"
-  :bug-tracker "https://github.com/shinmera/com-on/issues"
-  :source-control (:git "https://github.com/shinmera/com-on.git")
+  :homepage "https://shinmera.com/docs/com-on/"
+  :bug-tracker "https://shinmera.com/project/com-on/issues"
+  :source-control (:git "https://shinmera.com/project/com-on.git")
   :serial T
   :components ((:file "tests"))
   :depends-on (:com-on :parachute)
